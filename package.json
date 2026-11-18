@@ -1,0 +1,24 @@
+{
+  "name": "trou-malin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Trou Malin : une taupe creuse au bon endroit, trésors et pièges, jouable dans le navigateur et sur mobile.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/node": "^20.19.43",
+    "tailwindcss": "^4.3.5",
+    "typescript": "~5.6.3",
+    "vite": "^6.4.6",
+    "vitest": "^4.1.12"
+  },
+  "engines": { "node": ">=20" }
+}
