@@ -4,11 +4,11 @@
  * Aucun dégradé. Palette = thème Tailwind (src/style.css) + quelques teintes d'ombre propres au dessin.
  */
 export const C = {
-  ink: '#2b1d14', fur: '#7b563c', furDark: '#5c3f2b', cream: '#f6dcb4', creamDark: '#dcb98a',
-  pink: '#ff7aa8', gold: '#ffc21a', goldDark: '#d98f12', steel: '#c3cfd6', steelDark: '#8a9aa6',
-  wood: '#c98a45', woodDark: '#8a5a2b', gem: '#20c5c0', gemDark: '#12908d', gemLight: '#8ff0ea',
-  grass: '#4cc15a', grassDark: '#2f8f3c', denim: '#3b6fb6', denimDark: '#2a4f86', red: '#e8503a', white: '#ffffff',
-  soil: '#8a5a2b', cave: '#3a2618',
+  ink: '#2b1d14', fur: '#a86a3c', furDark: '#7a4626', cream: '#fff0c4', creamDark: '#e8c27c',
+  pink: '#ff6f9c', gold: '#ffc21a', goldDark: '#e08a0c', steel: '#d3dde3', steelDark: '#8497a6',
+  wood: '#d98a3d', woodDark: '#8f4f1e', gem: '#20d0c8', gemDark: '#0f9490', gemLight: '#9ff5ee',
+  grass: '#62d13c', grassDark: '#34a02a', denim: '#2f7fe0', denimDark: '#1f56b0', red: '#f0482e', white: '#ffffff',
+  soil: '#c9742c', cave: '#4a2813', sky: '#5ec6f5', sun: '#ffd23a',
 };
 
 const k = C.ink;
@@ -84,6 +84,7 @@ export const MOLE = `
   <g class="m-eyes-open"><circle cx="98" cy="114" r="7" fill="${k}"/><circle cx="142" cy="114" r="7" fill="${k}"/><circle cx="101" cy="111" r="2.600" fill="#fff"/><circle cx="145" cy="111" r="2.600" fill="#fff"/></g>
   <g class="m-eyes-happy" fill="none" stroke="${k}" stroke-width="5.5" stroke-linecap="round"><path d="M86 116q10-14 20 0"/><path d="M134 116q10-14 20 0"/></g>
   <path d="M82 102c3-5 7-7 12-8" stroke="#8fd0ff" stroke-opacity=".9" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M130 102c3-5 7-7 12-8" stroke="#8fd0ff" stroke-opacity=".9" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <ellipse cx="80" cy="134" rx="9" ry="6" fill="#ff8fae"/><ellipse cx="160" cy="134" rx="9" ry="6" fill="#ff8fae"/>
   <!-- museau -->
   <ellipse cx="120" cy="131" rx="14" ry="10" fill="${C.pink}" stroke="${k}" stroke-width="4.5"/><path d="M113 128c2-2 5-3 8-2" stroke="#fff" stroke-opacity=".8" stroke-width="3" stroke-linecap="round" fill="none"/>
   <g class="m-mouth-smile"><path d="M104 144q16 12 32 0" fill="none" stroke="${k}" stroke-width="4.5" stroke-linecap="round"/><rect x="113" y="148" width="6.500" height="9" rx="2" fill="#fff" stroke="${k}" stroke-width="3"/><rect x="121" y="148" width="6.500" height="9" rx="2" fill="#fff" stroke="${k}" stroke-width="3"/></g>
@@ -92,11 +93,13 @@ export const MOLE = `
 </g>
 <!-- pelle tenue dans la MAIN GAUCHE (à gauche de l'écran) ; le bras fait partie du groupe pour suivre la pelle -->
 <g class="m-shovel">
-  <path d="M40 222L64 116" stroke="${k}" stroke-width="14" stroke-linecap="round"/><path d="M40 222L64 116" stroke="${C.wood}" stroke-width="7" stroke-linecap="round"/>
-  <path d="M56 108h20" stroke="${k}" stroke-width="14" stroke-linecap="round"/><path d="M56 108h20" stroke="${C.woodDark}" stroke-width="7" stroke-linecap="round"/>
-  <path d="M42 214c-18-3-26-14-22-28l38 8c4 12-4 22-16 20z" fill="${C.steel}" stroke="${k}" stroke-width="5" stroke-linejoin="round"/>
-  <path d="M30 196l22 5" stroke="${C.steelDark}" stroke-width="5" stroke-linecap="round"/><path d="M26 192c3-3 6-4 10-4" stroke="#fff" stroke-opacity=".8" stroke-width="4" stroke-linecap="round" fill="none"/>
-  <path d="M42 196l10 6" stroke="${C.steelDark}" stroke-width="0"/>
+  <!-- vraie pelle : manche en bois à poignée en D, douille en fer, lame plate -->
+  <path d="M54 100L46 188" stroke="${k}" stroke-width="15" stroke-linecap="round"/><path d="M54 100L46 188" stroke="${C.wood}" stroke-width="8" stroke-linecap="round"/>
+  <path d="M51 112L48 150" stroke="#fff" stroke-opacity=".45" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M38 104V92q0-10 10-10h16q10 0 10 10v12" fill="none" stroke="${k}" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/><path d="M38 104V92q0-10 10-10h16q10 0 10 10v12" fill="none" stroke="${C.woodDark}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M39 176h15l2 18H37z" fill="${C.steelDark}" stroke="${k}" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M33 192h26c6 10 7 22 3 30-4 5-9 6-16 6s-12-1-16-6c-4-8-3-20 3-30z" fill="${C.steel}" stroke="${k}" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M38 200v18M54 200v18" stroke="${C.steelDark}" stroke-width="4" stroke-linecap="round"/><path d="M43 199l-1 10" stroke="#fff" stroke-opacity=".9" stroke-width="3.5" stroke-linecap="round"/>
   <ellipse cx="62" cy="146" rx="16" ry="19" transform="rotate(8 62 146)" fill="${C.fur}" stroke="${k}" stroke-width="5"/>
   <g fill="none" stroke="${k}" stroke-width="3.5" stroke-linecap="round"><path d="M70 136l-10 2M72 146l-11 1M70 156l-10-2"/></g>
   <g fill="${C.cream}" stroke="${k}" stroke-width="3" stroke-linejoin="round"><circle cx="50" cy="138" r="3.4"/><circle cx="48" cy="147" r="3.4"/><circle cx="50" cy="156" r="3.4"/></g>

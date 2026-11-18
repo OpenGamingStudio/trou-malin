@@ -10,20 +10,20 @@
   src: url("./fonts/fredoka-latin-wght-normal.woff2") format("woff2");
 }
 
-/* Identité Trou Malin (reprise de Taupe Tycoon) : aplats terreux, contour encre brune 3 px, ombre dure. */
+/* Identité Trou Malin, palette « Plein soleil » de Taupe Tycoon 2.6 : aplats vifs, contour encre brune 3 px, ombre dure. */
 @theme {
   --color-*: initial;
   --color-ink: #2b1d14;
-  --color-cream: #fff3d6;
-  --color-soil: #8a5a2b;
-  --color-grass: #4cc15a;
+  --color-cream: #fff0c4;
+  --color-soil: #8f4f1e;
+  --color-grass: #62d13c;
   --color-nugget: #ffc21a;
   --color-gem: #20c5c0;
-  --color-rose: #ff7aa8;
+  --color-rose: #ff6f9c;
   --color-white: #ffffff;
-  --color-denim: #3b6fb6;
+  --color-denim: #2f7fe0;
   --font-sans: "Fredoka", ui-rounded, sans-serif;
-  --shadow-hard: 4px 4px 0 #2b1d14;
+  --shadow-hard: 0 4px 0 #2b1d14;
 }
 
 #app { padding-top: max(0.5rem, env(safe-area-inset-top)); padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
@@ -32,7 +32,7 @@ html, body {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  background: #fff3d6;
+  background: #c9742c;
   color: #2b1d14;
   font-weight: 500;
   -webkit-tap-highlight-color: transparent;
@@ -48,24 +48,24 @@ html, body {
   .btn-icon { @apply min-h-[44px] min-w-[44px] px-2; }
   .btn[aria-pressed="true"]:not(.btn-icon) { @apply bg-nugget; }
   .btn-big { @apply bg-grass text-2xl; min-height: 56px; }
-  .btn:active:not([aria-disabled="true"]) { @apply translate-x-1 translate-y-1 shadow-none; }
+  .btn:active:not([aria-disabled="true"]) { @apply translate-y-1 shadow-none; }
   .btn:focus-visible, .mole:focus-visible, a:focus-visible, .cell:focus-visible {
     outline: 3px solid #2b1d14;
     outline-offset: 3px;
-    box-shadow: 0 0 0 3px #fff, 4px 4px 0 #2b1d14;
+    box-shadow: 0 0 0 3px #fff, 0 4px 0 #2b1d14;
   }
   .btn[aria-disabled="true"], .row[aria-disabled="true"] { background: #e2d6bd; color: #4a3a2c; box-shadow: none; }
   .chip { @apply inline-flex min-h-[44px] items-center gap-2 rounded-2xl border-[3px] border-ink bg-white px-2 text-xl font-bold shadow-hard; }
   .chip svg { @apply h-7 w-7; }
   .panel { @apply rounded-3xl border-[3px] border-ink bg-white text-ink shadow-hard; }
   .note { @apply rounded-2xl border-[3px] border-ink bg-cream px-3 py-1; }
-  .logo { @apply font-bold text-soil; -webkit-text-stroke: 1px #2b1d14; paint-order: stroke fill; text-shadow: 2px 2px 0 #2b1d14; }
+  .logo { @apply font-bold text-soil; -webkit-text-stroke: 1px #2b1d14; paint-order: stroke fill; text-shadow: 0 2px 0 #2b1d14; }
 
   /* plateau */
-  .board { display: grid; gap: 6px; width: min(100%, calc(100dvh - 19rem), 30rem); aspect-ratio: 1; touch-action: manipulation; }
+  .board { display: grid; gap: 6px; width: min(100%, calc(100dvh - 19rem), 35rem); aspect-ratio: 1; touch-action: manipulation; }
   .cell { @apply relative grid place-items-center overflow-hidden rounded-2xl border-[3px] border-ink bg-grass p-0 shadow-hard; min-width: 0; min-height: 0; -webkit-user-select: none; user-select: none; touch-action: manipulation; transition: transform 0.08s ease-out, box-shadow 0.08s ease-out; }
   .cell > svg.art { width: 86%; height: 86%; }
-  .cell:active:not(.open) { @apply translate-x-1 translate-y-1 shadow-none; }
+  .cell:active:not(.open) { @apply translate-y-1 shadow-none; }
   .cell.open { @apply bg-cream shadow-none; animation: dug 0.25s ease-out; }
   .cell.open.trap { background: #ffb3a3; animation: trapped 0.5s ease-out; }
   .cell .loot { position: absolute; width: 60%; height: 60%; right: 5%; top: 5%; animation: pop 0.35s ease-out; }
@@ -127,3 +127,10 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* Décor : ciel, soleil, nuages et horizon d'herbe en aplats (comme Taupe Tycoon), la terre en dessous. */
+#sky { position: fixed; inset: 0 0 auto 0; height: 34dvh; min-height: 9rem; background: #5ec6f5; border-bottom: 4px solid #2b1d14; z-index: 0; pointer-events: none; }
+#sky::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1.4rem; background: #62d13c; border-top: 4px solid #2b1d14; border-bottom: 4px solid #2b1d14; }
+#sky svg { position: absolute; width: clamp(4rem, 14vw, 7rem); height: auto; overflow: visible; }
+#sky .sun { right: 6%; top: 8%; } #sky .c1 { left: 4%; top: 12%; } #sky .c2 { left: 38%; top: 4%; width: clamp(3rem, 10vw, 5rem); }
+#app { z-index: 1; }

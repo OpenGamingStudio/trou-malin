@@ -126,7 +126,8 @@ function comboBadge() {
   const el = $('combo');
   if (st.combo < 2) { el.hidden = true; return; }
   el.hidden = false;
-  el.textContent = `×${game.multiplier(st.combo)} · ${st.combo}`;
+  const mult = game.multiplier(st.combo);
+  el.textContent = mult > 1 ? `Série ${st.combo} · ×${mult}` : `Série ${st.combo}`;
   el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
   const tier = game.multiplier(st.combo) - 1;
   if (tier > lastTier) snd.comboTier(tier);

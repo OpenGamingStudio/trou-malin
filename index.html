@@ -6,7 +6,7 @@
 <title>Trou Malin</title>
 <meta name="description" content="Trou Malin, un jeu web open source d'OpenGamingStudio : creuse au bon endroit avec la taupe, trouve les trésors et évite les pièges.">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
-<meta name="theme-color" content="#8a5a2b">
+<meta name="theme-color" content="#5ec6f5">
 <meta name="referrer" content="no-referrer">
 <link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -15,8 +15,13 @@
 <script type="module" src="/src/main.ts"></script>
 </head>
 <body class="font-sans">
+<div id="sky" aria-hidden="true">
+  <svg class="sun" viewBox="0 0 80 80"><g stroke="#2b1d14" stroke-width="4" stroke-linecap="round"><path d="M40 4v8M40 68v8M4 40h8M68 40h8M14 14l6 6M60 60l6 6M66 14l-6 6M20 60l-6 6" stroke="#ffd23a"/></g><circle cx="40" cy="40" r="18" fill="#ffd23a" stroke="#2b1d14" stroke-width="4"/></svg>
+  <svg class="c1" viewBox="0 0 90 40"><path d="M6 36c-4-10 3-18 12-16 4-10 20-10 24 0 10-3 18 4 14 16z" fill="#fff" stroke="#2b1d14" stroke-width="3.5" stroke-linejoin="round"/></svg>
+  <svg class="c2" viewBox="0 0 90 40"><path d="M6 36c-4-10 3-18 12-16 4-10 20-10 24 0 10-3 18 4 14 16z" fill="#fff" stroke="#2b1d14" stroke-width="3.5" stroke-linejoin="round"/></svg>
+</div>
 <main id="app" class="fixed inset-0 flex flex-col items-center gap-2 overflow-hidden p-2">
-  <header class="grid w-full max-w-[30rem] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
+  <header class="grid w-full max-w-[35rem] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
     <div id="mole-box" class="mole-box" data-mood="idle"><svg id="mole-svg" viewBox="0 0 240 240" class="h-full w-full" aria-hidden="true" focusable="false"></svg></div>
     <div class="panel min-w-0 px-3 py-1">
       <p class="flex items-center justify-between gap-2"><span class="min-w-0 truncate text-3xl font-bold leading-none" id="score" aria-live="off">0</span><span class="shrink-0 rounded-lg border-2 border-ink bg-nugget px-2 text-base font-bold" id="lvl">Manche 1</span></p>
@@ -24,12 +29,12 @@
     </div>
     <button id="snd" type="button" class="btn btn-icon" aria-pressed="true" aria-label="Son"></button>
   </header>
-  <div class="flex w-full max-w-[30rem] items-center justify-center gap-2"><p id="hint" class="hint min-w-0" aria-live="polite">Creuse un monticule !</p><div id="combo" class="combo" hidden></div></div>
+  <div class="flex w-full max-w-[35rem] items-center justify-center gap-2"><p id="hint" class="hint min-w-0" aria-live="polite">Creuse un monticule !</p><div id="combo" class="combo" hidden></div></div>
   <section class="relative grid min-h-0 w-full flex-1 place-items-center" aria-label="Plateau">
     <div id="board" class="board" role="grid" aria-label="Plateau de trous"></div>
     <div id="fx" class="pointer-events-none absolute inset-0 z-30 overflow-hidden" aria-hidden="true"></div>
   </section>
-  <footer class="grid w-full max-w-[30rem] grid-cols-2 gap-2">
+  <footer class="grid w-full max-w-[35rem] grid-cols-2 gap-2">
     <button id="sniff" type="button" class="btn btn-sm"></button>
     <button id="flagmode" type="button" class="btn btn-sm" aria-pressed="false"></button>
   </footer>
