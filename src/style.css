@@ -1,0 +1,129 @@
+@import "tailwindcss";
+@source not inline("blur");
+@custom-variant wide (@media (min-width: 700px) or ((orientation: landscape) and (max-height: 520px)));
+
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("./fonts/fredoka-latin-wght-normal.woff2") format("woff2");
+}
+
+/* Identité Trou Malin (reprise de Taupe Tycoon) : aplats terreux, contour encre brune 3 px, ombre dure. */
+@theme {
+  --color-*: initial;
+  --color-ink: #2b1d14;
+  --color-cream: #fff3d6;
+  --color-soil: #8a5a2b;
+  --color-grass: #4cc15a;
+  --color-nugget: #ffc21a;
+  --color-gem: #20c5c0;
+  --color-rose: #ff7aa8;
+  --color-white: #ffffff;
+  --color-denim: #3b6fb6;
+  --font-sans: "Fredoka", ui-rounded, sans-serif;
+  --shadow-hard: 4px 4px 0 #2b1d14;
+}
+
+#app { padding-top: max(0.5rem, env(safe-area-inset-top)); padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
+html { font-size: clamp(14px, 3.6vw, 16px); }
+html, body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #fff3d6;
+  color: #2b1d14;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-2xl border-[3px] border-ink bg-white px-4 py-2 text-lg font-bold text-ink shadow-hard;
+    touch-action: manipulation;
+    transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, background-color 0.12s;
+  }
+  .btn-sm { @apply min-h-[44px] min-w-[48px] px-3; }
+  .btn-icon { @apply min-h-[44px] min-w-[44px] px-2; }
+  .btn[aria-pressed="true"]:not(.btn-icon) { @apply bg-nugget; }
+  .btn-big { @apply bg-grass text-2xl; min-height: 56px; }
+  .btn:active:not([aria-disabled="true"]) { @apply translate-x-1 translate-y-1 shadow-none; }
+  .btn:focus-visible, .mole:focus-visible, a:focus-visible, .cell:focus-visible {
+    outline: 3px solid #2b1d14;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 3px #fff, 4px 4px 0 #2b1d14;
+  }
+  .btn[aria-disabled="true"], .row[aria-disabled="true"] { background: #e2d6bd; color: #4a3a2c; box-shadow: none; }
+  .chip { @apply inline-flex min-h-[44px] items-center gap-2 rounded-2xl border-[3px] border-ink bg-white px-2 text-xl font-bold shadow-hard; }
+  .chip svg { @apply h-7 w-7; }
+  .panel { @apply rounded-3xl border-[3px] border-ink bg-white text-ink shadow-hard; }
+  .note { @apply rounded-2xl border-[3px] border-ink bg-cream px-3 py-1; }
+  .logo { @apply font-bold text-soil; -webkit-text-stroke: 1px #2b1d14; paint-order: stroke fill; text-shadow: 2px 2px 0 #2b1d14; }
+
+  /* plateau */
+  .board { display: grid; gap: 6px; width: min(100%, calc(100dvh - 19rem), 30rem); aspect-ratio: 1; touch-action: manipulation; }
+  .cell { @apply relative grid place-items-center overflow-hidden rounded-2xl border-[3px] border-ink bg-grass p-0 shadow-hard; min-width: 0; min-height: 0; -webkit-user-select: none; user-select: none; touch-action: manipulation; transition: transform 0.08s ease-out, box-shadow 0.08s ease-out; }
+  .cell > svg.art { width: 86%; height: 86%; }
+  .cell:active:not(.open) { @apply translate-x-1 translate-y-1 shadow-none; }
+  .cell.open { @apply bg-cream shadow-none; animation: dug 0.25s ease-out; }
+  .cell.open.trap { background: #ffb3a3; animation: trapped 0.5s ease-out; }
+  .cell .loot { position: absolute; width: 60%; height: 60%; right: 5%; top: 5%; animation: pop 0.35s ease-out; }
+  .cell .num { position: absolute; left: 6%; bottom: 2%; font-size: clamp(1.1rem, 6.4vw, 2rem); font-weight: 700; line-height: 1; -webkit-text-stroke: 4px #fff; paint-order: stroke fill; }
+  .cell.open:not(.has-loot) .num { position: static; font-size: clamp(1.6rem, 9vw, 3rem); }
+  .cell .flag { position: absolute; inset: 8%; animation: pop 0.25s ease-out; }
+  .cell .flag svg { width: 100%; height: 100%; }
+  .n1 { color: #3b6fb6; } .n2 { color: #2f8f3c; } .n3 { color: #e8503a; } .n4 { color: #7a3fb0; } .n5, .n6, .n7, .n8 { color: #2b1d14; }
+  .board.shake { animation: shake 0.4s ease-out; }
+  .cell.sniffed { animation: pulse 0.5s ease-in-out 3; }
+
+  .heart { @apply h-7 w-7; }
+  .heart.lost { animation: pop 0.4s ease-out; }
+  .mole-box { width: clamp(4.5rem, 22vw, 6.5rem); height: clamp(4.5rem, 22vw, 6.5rem); }
+  .mole-box svg { overflow: visible; }
+  .m-body, .m-head, .m-shovel, .m-eyes-open, .m-lamp { transform-box: fill-box; }
+  .m-body { transform-origin: 50% 100%; animation: breathe 3.4s ease-in-out infinite; }
+  .m-head { transform-origin: 50% 100%; animation: nod 3.4s ease-in-out infinite; }
+  .m-shovel { transform-box: view-box; transform-origin: 58px 150px; animation: sway 4.2s ease-in-out infinite; }
+  .m-eyes-open { transform-origin: 50% 50%; animation: blink 5s infinite; }
+  .m-eyes-happy, .m-mouth-open, .m-mouth-big { display: none; }
+  .mole-box[data-mood="dig"] .m-mouth-smile, .mole-box[data-mood="happy"] .m-mouth-smile, .mole-box[data-mood="ouch"] .m-mouth-smile { display: none; }
+  .mole-box[data-mood="dig"] .m-mouth-open, .mole-box[data-mood="ouch"] .m-mouth-open { display: inline; }
+  .mole-box[data-mood="happy"] .m-eyes-open { display: none; }
+  .mole-box[data-mood="happy"] .m-eyes-happy { display: inline; }
+  .mole-box[data-mood="happy"] .m-mouth-big { display: inline; }
+  .mole-box[data-mood="dig"] .m-shovel { animation: dig 0.26s ease-out; }
+  .mole-box[data-mood="happy"] svg { animation: hop 0.7s ease-out; }
+  .mole-box[data-mood="ouch"] svg { animation: nudge 0.4s ease-out; }
+
+  .combo { @apply shrink-0 rounded-2xl border-[3px] border-ink bg-nugget px-2 py-1 text-base font-bold text-ink shadow-hard; pointer-events: none; white-space: nowrap; }
+  .combo.tick { animation: tick 0.18s ease-out; }
+  .combo[hidden], .hint[hidden], .overlay[hidden] { display: none; }
+  .hint { @apply rounded-2xl border-[3px] border-ink bg-white px-3 py-1 text-center text-base font-bold shadow-hard; }
+  .float { position: absolute; z-index: 30; pointer-events: none; font-weight: 700; font-size: 1.5rem; -webkit-text-stroke: 4px #2b1d14; paint-order: stroke fill; color: #ffc21a; animation: rise 0.9s ease-out forwards; }
+  .shard { position: absolute; z-index: 25; pointer-events: none; width: 20px; height: 20px; left: 50%; top: 50%; margin: -10px 0 0 -10px; animation: shard 0.6s cubic-bezier(.2,.7,.4,1) forwards; }
+  .shard svg { width: 100%; height: 100%; overflow: visible; }
+  .overlay { @apply fixed inset-0 z-40 grid place-items-center p-3; background: rgba(43, 29, 20, 0.6); overflow-y: auto; }
+  .overlay .panel { width: min(24rem, 100%); @apply p-4 text-center; animation: pop 0.3s ease-out; }
+  .stat { @apply flex items-center justify-between gap-2 rounded-2xl border-[3px] border-ink bg-cream px-3 py-1 text-lg font-bold; }
+}
+
+@keyframes tick { 0% { transform: scale(1.3); } 100% { transform: scale(1); } }
+@keyframes rise { from { transform: translate(-50%, 0) scale(0.8); opacity: 1; } 15% { transform: translate(-50%, -12px) scale(1.15); } to { transform: translate(-50%, -80px) scale(1); opacity: 0; } }
+@keyframes pop { 0% { transform: scale(0.6); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+@keyframes nudge { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+@keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.012, 0.985); } }
+@keyframes nod { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(2px); } }
+@keyframes sway { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(1.6deg); } }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.08); } }
+@keyframes dig { 0% { transform: translate(0, 0) rotate(0); } 35% { transform: translate(-4px, -34px) rotate(9deg); } 62% { transform: translate(2px, 10px) rotate(-5deg); } 100% { transform: translate(0, 0) rotate(0); } }
+@keyframes hop { 0% { transform: translateY(0) scale(1); } 30% { transform: translateY(-16px) scale(0.97, 1.04); } 60% { transform: translateY(0) scale(1.04, 0.95); } 100% { transform: translateY(0) scale(1); } }
+@keyframes shard { 0% { transform: translate(0, 0) rotate(0) scale(0.5); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1.2); opacity: 0; } }
+@keyframes shake { 0%, 100% { transform: translate(0); } 15% { transform: translate(-6px, 2px); } 35% { transform: translate(6px, -3px); } 55% { transform: translate(-4px, -2px); } 75% { transform: translate(3px, 2px); } }
+@keyframes dug { 0% { transform: scale(0.85); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes trapped { 0% { transform: scale(0.7) rotate(-6deg); } 40% { transform: scale(1.12) rotate(4deg); } 100% { transform: scale(1) rotate(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
