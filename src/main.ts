@@ -5,7 +5,7 @@ import * as snd from './sound';
 import { fmt } from './format';
 import { VERSION } from './version';
 import { RULE } from './rules';
-import { STEPS } from './tuto';
+import { STEPS, tutoAction } from './tuto';
 import { loadProgress, saveProgress, loadOpts, saveOpts, mergeLevel, unlocked, totalStars } from './save';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -361,7 +361,7 @@ const cascadeHint = (n: number) => (n > 0 ? 'Terrain dégagé !' : 'Bien creusé
 
 function onFlag(i: number) {
   if (busy || !playing || modalOpen() || !gate(i, 'flag')) return;
-  if (game.toggleFlag(st, i)) { snd.tab(); repaint(i); tutoNext('flag'); }
+  if (game.toggleFlag(st, i)) { snd.tab(); repaint(i); tutoNext('flag'); if (mode === 'tuto' && flagMode) { flagMode = false; hud(); } }
 }
 
 // --- accueil, carte, aide ---
@@ -489,8 +489,12 @@ boardEl.addEventListener('pointerdown', (e) => {
   snd.unlock();
   longDone = false;
   window.clearTimeout(pressTimer);
-  pressTimer = window.setTimeout(() => { longDone = true; onFlag(i); }, 450);
+  pressTimer = window.setTimeout(() => { longDone = true; act(i, true); }, 450);
 });
+const act = (i: number, long: boolean) => {
+  const a = tutoAction(mode === 'tuto' ? STEPS[tutoI] : undefined, i, flagMode, long);
+  if (a === 'flag') onFlag(i); else onDig(i);
+};
 const cancelPress = () => window.clearTimeout(pressTimer);
 boardEl.addEventListener('pointerup', cancelPress);
 boardEl.addEventListener('pointerleave', cancelPress);
@@ -499,7 +503,7 @@ boardEl.addEventListener('contextmenu', (e) => e.preventDefault());
 boardEl.addEventListener('click', (e) => {
   const i = idx(e.target); if (i < 0) return;
   if (longDone) { longDone = false; return; }
-  if (flagMode) onFlag(i); else onDig(i);
+  act(i, false);
 });
 
 $('flagmode').addEventListener('click', () => { flagMode = !flagMode; snd.unlock(); snd.tab(); hud(); setHint(flagMode ? 'Mode drapeau : touche un monticule suspect.' : 'Mode pelle : creuse !'); });

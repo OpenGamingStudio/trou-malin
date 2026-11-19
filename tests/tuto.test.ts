@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as g from '../src/game';
-import { STEPS } from '../src/tuto';
+import { STEPS, tutoAction } from '../src/tuto';
 import { RULE } from '../src/rules';
 
 describe('tuto', () => {
@@ -49,5 +49,30 @@ describe('règles affichées', () => {
   });
   it('aucun nombre à virgule dans les textes', () => {
     for (const t of [...Object.values(RULE), ...STEPS.map((s) => s.text)]) expect(t).not.toMatch(/\d[.,]\d/);
+  });
+  it('tuto complet en mode drapeau actif : la pièce se creuse, le drapeau aussi en mode pelle', () => {
+    const s = g.newTuto();
+    let flagMode = true; // le joueur a activé le bouton Drapeau
+    const rng = g.seeded(1);
+    let i = 0;
+    const tap = (cell: number, long = false) => {
+      const step = STEPS[i]!;
+      const a = tutoAction(step, cell, flagMode, long);
+      if (step.act === 'ok' || step.act === 'free' || step.cell !== cell || step.act !== a) return false;
+      if (a === 'dig') g.dig(s, cell, rng); else g.toggleFlag(s, cell);
+      i++;
+      return true;
+    };
+    expect(tap(g.TUTO.first)).toBe(true); // étape dig malgré flagMode
+    i++; // « Compris »
+    expect(tap(g.TUTO.flag)).toBe(true); // drapeau en mode drapeau
+    expect(tap(g.TUTO.coin)).toBe(true); // pièce creusée même si flagMode reste actif
+    expect(s.board.cells[g.TUTO.coin]!.open).toBe(true);
+    flagMode = false;
+    expect(tutoAction(STEPS[2], g.TUTO.flag, false, false)).toBe('flag'); // mode pelle sur étape drapeau
+    expect(tutoAction(STEPS[2], g.TUTO.flag, false, true)).toBe('flag'); // appui long
+    expect(tutoAction(STEPS[3], g.TUTO.coin, true, true)).toBe('dig');
+    expect(tutoAction(undefined, 3, true, false)).toBe('flag');
+    expect(tutoAction(undefined, 3, false, false)).toBe('dig');
   });
 });

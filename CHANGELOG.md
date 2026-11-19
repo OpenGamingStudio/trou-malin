@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1
+
+- Correctif du tuto : activer le bouton Drapeau à l'étape drapeau ne bloque plus l'étape « creuse la case qui brille ». Sur la case ciblée, l'action attendue (creuser ou drapeau) l'emporte sur le mode ; le mode drapeau se désactive après l'étape drapeau.
+
 ## 2.0.0
 
 - Carte des niveaux façon jeu de bonbons : chemin sinueux numéroté, niveaux terminés avec étoiles, niveau courant mis en avant, suivants verrouillés, défilement vertical, progression sauvegardée sur l'appareil.
