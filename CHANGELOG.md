@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0
+
+- 100 niveaux jouables en 10 mondes de 10 (Prairie, Verger, Potager, Colline, Forêt, Rivière, Falaise, Grotte, Mine, Cœur de terre). 18 formes de grille, de 16 à 48 cases, de plus en plus grandes ; part de pièges de 14 % à 27 %.
+- Introduction progressive : bombes seules (monde 1), pièces (niveau 11), pièges à ours (21), gemmes (31), flaques (41). La fiche de niveau annonce chaque nouveauté.
+- Fini les niveaux gagnés en un clic : la pose des pièges, faite après le premier coup (toujours sûr), est retentée jusqu'à ce que le niveau demande au moins 3 clics après le premier, davantage pour les grandes grilles (3 + 1 par 12 cases).
+- Test automatisé sur les 100 niveaux : depuis chaque case de départ possible et plusieurs tirages, un joueur parfait ne finit jamais un niveau en moins de clics que le minimum exigé.
+- Carte des niveaux par mondes : bandeaux de monde, étoiles gagnées par monde, flèches pour passer d'un monde à l'autre, niveaux verrouillés.
+
 ## 2.0.1
 
 - Correctif du tuto : activer le bouton Drapeau à l'étape drapeau ne bloque plus l'étape « creuse la case qui brille ». Sur la case ciblée, l'action attendue (creuser ou drapeau) l'emporte sur le mode ; le mode drapeau se désactive après l'étape drapeau.

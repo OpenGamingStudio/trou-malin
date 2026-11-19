@@ -26,23 +26,35 @@ export interface Shape {
   rows: string[];
 }
 
-export const SHAPES: Shape[] = [
-  { id: 'carre3', name: 'Carré', rows: ['###', '###', '###'] },
-  { id: 'croix', name: 'Croix', rows: ['..#..', '..#..', '#####', '..#..', '..#..'] },
-  { id: 'losange', name: 'Losange', rows: ['..#..', '.###.', '#####', '.###.', '..#..'] },
+const SHAPE_LIST: Shape[] = [
   { id: 'carre4', name: 'Carré', rows: ['####', '####', '####', '####'] },
-  { id: 'zigzag', name: 'Zigzag', rows: ['######', '...###', '..###.', '.###..', '######'] },
-  { id: 'etoile', name: 'Étoile', rows: ['..#..', '.###.', '#####', '.###.', '##.##'] },
-  { id: 'coeur', name: 'Cœur', rows: ['.##.##', '######', '######', '.####.', '..##..'] },
-  { id: 'anneau', name: 'Anneau', rows: ['.####.', '######', '##..##', '##..##', '######', '.####.'] },
+  { id: 'etoile', name: 'Étoile', rows: ['..##..', '.####.', '######', '.####.', '##..##'] },
   { id: 'croix-large', name: 'Grande croix', rows: ['..##..', '..##..', '######', '######', '..##..', '..##..'] },
+  { id: 'sablier', name: 'Sablier', rows: ['#####', '.###.', '..#..', '..#..', '.###.', '#####'] },
+  { id: 'zigzag', name: 'Zigzag', rows: ['######', '...###', '..###.', '.###..', '######'] },
+  { id: 'escalier', name: 'Escalier', rows: ['#.....', '##....', '###...', '####..', '#####.', '######'] },
+  { id: 'coeur', name: 'Cœur', rows: ['.##.##', '######', '######', '.####.', '..##..'] },
+  { id: 'losange', name: 'Losange', rows: ['..#..', '.###.', '#####', '#####', '#####', '.###.', '..#..'] },
+  { id: 'carre5', name: 'Carré', rows: ['..##..', '.####.', '######', '.####.', '##..##'] },
+  { id: 'anneau', name: 'Anneau', rows: ['.####.', '######', '##..##', '##..##', '######', '.####.'] },
   { id: 'taupe', name: 'Taupe', rows: ['##..##', '######', '######', '######', '.####.', '..##..'] },
-  { id: 'carre5', name: 'Carré', rows: ['#####', '#####', '#####', '#####', '#####'] },
+  { id: 'pont', name: 'Pont', rows: ['######', '######', '##..##', '##..##', '######', '######'] },
+  { id: 'croix-haute', name: 'Croix haute', rows: ['..##..', '..##..', '######', '######', '######', '######', '..##..', '..##..'] },
+  { id: 'fenetre', name: 'Fenêtre', rows: ['######', '#.##.#', '######', '######', '#.##.#', '######'] },
+  { id: 'diamant', name: 'Diamant', rows: ['..##..', '.####.', '######', '######', '######', '######', '.####.', '..##..'] },
   { id: 'carre6', name: 'Grand carré', rows: ['######', '######', '######', '######', '######', '######'] },
+  { id: 'tour', name: 'Tour', rows: ['######', '######', '######', '######', '######', '######', '######'] },
+  { id: 'bloc', name: 'Grand bloc', rows: ['######', '######', '######', '######', '######', '######', '######', '######'] },
 ];
-
-export const MAX_LEVEL = 999;
 export const shapeCells = (sh: Shape): number => sh.rows.join('').split('#').length - 1;
+/** Formes rangées par nombre de cases croissant : plus le niveau monte, plus la grille est grande. */
+export const SHAPES: Shape[] = [...SHAPE_LIST].sort((a, b) => shapeCells(a) - shapeCells(b));
+
+/** 100 niveaux jouables, en 10 mondes de 10. */
+export const MAX_LEVEL = 100;
+export const WORLD_SIZE = 10;
+export const WORLDS = ['Prairie', 'Verger', 'Potager', 'Colline', 'Forêt', 'Rivière', 'Falaise', 'Grotte', 'Mine', 'Cœur de terre'] as const;
+export const worldOf = (lvl: number): number => Math.min(WORLDS.length - 1, Math.floor((Math.max(1, lvl) - 1) / WORLD_SIZE));
 
 export interface Level {
   shape: Shape;
@@ -51,16 +63,38 @@ export interface Level {
   /** Nombre de cases de la forme. */
   cells: number;
   traps: number;
+  /** Types de pièges présents (introduits un par un). */
+  trapKinds: Trap[];
+  /** Part de cases sûres portant une pièce (0 = aucune) et part de ces trésors qui sont des gemmes. */
+  coinRate: number;
+  gemShare: number;
+  /** Nombre de clics sûrs qu'il faut faire APRÈS le premier coup pour finir le niveau (au moins 3). */
+  minAfter: number;
+  /** Nouveauté du niveau (premier niveau où elle apparaît), sinon ''. */
+  intro: string;
 }
 
-/** Niveau n : la forme tourne sur 12 modèles, la part de pièges monte de 12 % à 28 % (plafond atteint au niveau 14). */
+/** Clics (après le premier) qu'un niveau de `cells` cases exige au minimum : 3, puis plus pour les grandes grilles. */
+export const minAfterFor = (cells: number): number => 3 + Math.floor(cells / 12);
+
+/** Introductions : monde 1 bombes seules ; 2 pièces ; 3 pièges à ours ; 4 gemmes ; 5 flaques. */
+const INTROS: Record<number, string> = {
+  1: 'Les bombes', 11: 'Les pièces', 21: 'Les pièges à ours', 31: 'Les gemmes', 41: 'Les flaques',
+};
+
+/** Niveau n (1 à 100) : forme de plus en plus grande, part de pièges de 14 % à 27 %, pièges et trésors introduits par monde. */
 export function levelSpec(lvl: number): Level {
   const l = Math.min(MAX_LEVEL, Math.max(1, Math.floor(lvl)));
-  const shape = SHAPES[(l - 1) % SHAPES.length]!;
+  const n = SHAPES.length;
+  const idx = Math.min(n - 1, Math.floor(((l - 1) * (n - 6)) / (MAX_LEVEL - 1)) + (((l - 1) * 5) % 6));
+  const shape = SHAPES[idx]!;
   const cells = shapeCells(shape);
-  const ratio = Math.min(0.28, 0.12 + 0.012 * l);
-  const traps = Math.max(1, Math.min(cells - 4, Math.floor(cells * 0.3), Math.round(cells * ratio)));
-  return { shape, cols: shape.rows[0]!.length, rows: shape.rows.length, cells, traps };
+  const ratio = 0.14 + (0.13 * (l - 1)) / (MAX_LEVEL - 1);
+  const traps = Math.max(3, Math.min(Math.floor(cells * 0.3), Math.round(cells * ratio)));
+  const trapKinds: Trap[] = l > 40 ? ['bomb', 'bear', 'water'] : l > 20 ? ['bomb', 'bear'] : ['bomb'];
+  const coinRate = l <= 10 ? 0 : 0.25 + Math.min(0.2, (l - 11) * 0.003);
+  const gemShare = l <= 30 ? 0 : 0.15 + Math.min(0.15, (l - 31) * 0.002);
+  return { shape, cols: shape.rows[0]!.length, rows: shape.rows.length, cells, traps, trapKinds, coinRate, gemShare, minAfter: minAfterFor(cells), intro: INTROS[l] ?? '' };
 }
 
 export type Rng = () => number;
@@ -102,6 +136,11 @@ export interface Board {
   cols: number;
   rows: number;
   trapCount: number;
+  trapKinds: Trap[];
+  coinRate: number;
+  gemShare: number;
+  /** Clics sûrs exigés après le premier coup (la pose retente jusqu'à l'obtenir). */
+  minAfter: number;
   cells: Cell[];
   placed: boolean;
   /** Valeur de base du niveau : somme des points (sans série) de toutes les cases sûres. Connue dès la pose. */
@@ -112,32 +151,71 @@ export interface Board {
 
 const blankCell = (gone: boolean): Cell => ({ kind: 'empty', open: false, flag: false, n: 0, gone });
 
-export function boardOf(lvl: number, shape: Shape, traps: number): Board {
+export interface BoardOpts { trapKinds?: Trap[]; coinRate?: number; gemShare?: number; minAfter?: number }
+
+export function boardOf(lvl: number, shape: Shape, traps: number, o: BoardOpts = {}): Board {
   const cols = shape.rows[0]!.length, rows = shape.rows.length;
   const cells = shape.rows.join('').split('').map((ch) => blankCell(ch !== '#'));
-  return { lvl, shape, cols, rows, trapCount: traps, cells, placed: false, base: 0, ideal: 0 };
+  return { lvl, shape, cols, rows, trapCount: traps, trapKinds: o.trapKinds ?? TRAPS, coinRate: o.coinRate ?? 0.4, gemShare: o.gemShare ?? 0.22, minAfter: o.minAfter ?? 0, cells, placed: false, base: 0, ideal: 0 };
 }
 
 export function newBoard(lvl: number): Board {
   const s = levelSpec(lvl);
-  return boardOf(lvl, s.shape, s.traps);
+  return boardOf(lvl, s.shape, s.traps, s);
 }
 
 const baseOf = (k: Kind): number => (k === 'coin' ? POINTS.coin : k === 'gem' ? POINTS.gem : POINTS.empty);
 
-function finish(b: Board): void {
+function countN(b: Board): void {
   for (let i = 0; i < b.cells.length; i++) {
     const c = b.cells[i]!;
     if (c.gone) continue;
-    c.n = neighbors(i, b.cols, b.rows, b.cells).filter((j) => TRAPS.includes(b.cells[j]!.kind as Trap)).length;
+    c.n = neighbors(i, b.cols, b.rows, b.cells).filter((j) => isTrap(b.cells[j]!.kind)).length;
   }
+}
+
+function finish(b: Board): void {
+  countN(b);
   const vals = b.cells.filter((c) => !c.gone && !isTrap(c.kind)).map((c) => baseOf(c.kind)).sort((x, y) => x - y);
   b.base = vals.reduce((a, v) => a + v, 0);
   b.ideal = vals.reduce((a, v, k) => a + v * multiplier(k + 1), 0);
   b.placed = true;
 }
 
-/** Pose pièges et trésors après le premier coup de pelle : la case creusée et ses voisines sont toujours sûres. */
+/**
+ * Nombre minimal de clics pour ouvrir toutes les cases sûres (chiffres `n` à jour, aucun drapeau) :
+ * une composante de cases à 0 = 1 clic (la propagation ouvre aussi ses bords), plus chaque case chiffrée sans voisine à 0.
+ */
+export function clicksToClear(b: Board): number {
+  const seen = new Set<number>(), covered = new Set<number>();
+  let clicks = 0;
+  for (let i = 0; i < b.cells.length; i++) {
+    const c = b.cells[i]!;
+    if (c.gone || isTrap(c.kind) || c.n !== 0 || seen.has(i)) continue;
+    clicks++;
+    seen.add(i);
+    const q = [i];
+    while (q.length) {
+      const cur = q.pop()!;
+      covered.add(cur);
+      for (const j of neighbors(cur, b.cols, b.rows, b.cells)) {
+        covered.add(j);
+        if (!seen.has(j) && b.cells[j]!.n === 0 && !isTrap(b.cells[j]!.kind)) { seen.add(j); q.push(j); }
+      }
+    }
+  }
+  for (let i = 0; i < b.cells.length; i++) {
+    const c = b.cells[i]!;
+    if (!c.gone && !isTrap(c.kind) && !covered.has(i)) clicks++;
+  }
+  return clicks;
+}
+
+/**
+ * Pose pièges et trésors après le premier coup de pelle : la case creusée et ses voisines sont toujours sûres.
+ * La disposition est retentée (pièges déplacés un à un) jusqu'à ce que le niveau exige au moins `minAfter` clics après le premier :
+ * aucune grande cascade ne finit le niveau d'un coup.
+ */
 export function place(b: Board, first: number, rng: Rng): void {
   const live = b.cells.map((_, i) => i).filter((i) => !b.cells[i]!.gone);
   const safe = new Set([first, ...neighbors(first, b.cols, b.rows, b.cells)]);
@@ -145,11 +223,26 @@ export function place(b: Board, first: number, rng: Rng): void {
   if (pool.length < b.trapCount) pool = live.filter((i) => i !== first);
   const shuffle = <T,>(a: T[]) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j]!, a[i]!]; } return a; };
   shuffle(pool);
-  const traps = Math.min(b.trapCount, pool.length);
-  for (let k = 0; k < traps; k++) b.cells[pool[k]!]!.kind = TRAPS[Math.floor(rng() * TRAPS.length)]!;
+  const count = Math.min(b.trapCount, pool.length);
+  const kinds = b.trapKinds.length ? b.trapKinds : TRAPS;
+  const at = pool.slice(0, count), free = pool.slice(count);
+  const mark = () => { for (const i of pool) b.cells[i]!.kind = 'empty'; at.forEach((i, k) => { b.cells[i]!.kind = kinds[k % kinds.length]!; }); countN(b); };
+  mark();
+  let best = clicksToClear(b), bestAt = at.slice();
+  const want = b.minAfter + 1;
+  for (let step = 0; step < 600 && best < want && free.length; step++) {
+    const k = Math.floor(rng() * at.length), f = Math.floor(rng() * free.length);
+    [at[k], free[f]] = [free[f]!, at[k]!];
+    mark();
+    const c = clicksToClear(b);
+    if (c >= best) { best = c; bestAt = at.slice(); } else { [at[k], free[f]] = [free[f]!, at[k]!]; }
+  }
+  at.splice(0, at.length, ...bestAt);
+  mark();
+  shuffle(at).forEach((i, k) => { b.cells[i]!.kind = kinds[k % kinds.length]!; });
   for (const i of live) {
     const c = b.cells[i]!;
-    if (c.kind === 'empty' && rng() < 0.4) c.kind = rng() < 0.22 ? 'gem' : 'coin';
+    if (c.kind === 'empty' && b.coinRate > 0 && rng() < b.coinRate) c.kind = rng() < b.gemShare ? 'gem' : 'coin';
   }
   finish(b);
 }

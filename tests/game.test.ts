@@ -14,29 +14,28 @@ function connected(sh: g.Shape): boolean {
 }
 
 describe('formes et niveaux', () => {
-  it('12 formes valides : rectangulaires, 6 colonnes au plus, d\'un seul tenant, au moins 9 cases', () => {
-    expect(g.SHAPES.length).toBe(12);
+  it('18 formes valides : rectangulaires, 6 colonnes au plus, d\'un seul tenant, au moins 16 cases', () => {
+    expect(g.SHAPES.length).toBe(18);
     for (const sh of g.SHAPES) {
       expect(new Set(sh.rows.map((r) => r.length)).size).toBe(1);
       expect(sh.rows[0]!.length).toBeLessThanOrEqual(6);
-      expect(sh.rows.length).toBeLessThanOrEqual(6);
-      expect(g.shapeCells(sh)).toBeGreaterThanOrEqual(9);
+      expect(sh.rows.length).toBeLessThanOrEqual(8);
+      expect(g.shapeCells(sh)).toBeGreaterThanOrEqual(16);
       expect(connected(sh)).toBe(true);
     }
     const holes = g.SHAPES.filter((sh) => sh.rows.join('').includes('.'));
-    expect(holes.map((s) => s.id)).toEqual(expect.arrayContaining(['coeur', 'etoile', 'croix', 'losange', 'anneau', 'zigzag', 'taupe']));
+    expect(holes.map((s) => s.id)).toEqual(expect.arrayContaining(['coeur', 'etoile', 'sablier', 'losange', 'anneau', 'zigzag', 'taupe']));
   });
-  it('levelSpec : la forme tourne, les pièges montent sans dépasser 28 %', () => {
-    expect(g.levelSpec(1).shape.id).toBe('carre3');
-    expect(g.levelSpec(13).shape.id).toBe('carre3');
-    expect(g.levelSpec(7).shape.id).toBe('coeur');
+  it('levelSpec : grilles de plus en plus grandes, pièges de 14 % à 30 % au plus', () => {
+    expect(g.levelSpec(1).cells).toBeLessThanOrEqual(g.levelSpec(100).cells);
+    expect(g.levelSpec(100).cells).toBeGreaterThanOrEqual(32);
     for (let l = 1; l <= 200; l++) {
       const s = g.levelSpec(l);
-      expect(s.traps).toBeGreaterThanOrEqual(1);
-      expect(s.cells - s.traps).toBeGreaterThanOrEqual(4);
+      expect(s.traps).toBeGreaterThanOrEqual(3);
+      expect(s.cells - s.traps).toBeGreaterThanOrEqual(8);
       expect(s.traps / s.cells).toBeLessThanOrEqual(0.3);
     }
-    expect(g.levelSpec(30).traps / g.levelSpec(30).cells).toBeGreaterThan(g.levelSpec(1).traps / g.levelSpec(1).cells);
+    expect(g.levelSpec(100).traps / g.levelSpec(100).cells).toBeGreaterThan(g.levelSpec(1).traps / g.levelSpec(1).cells);
   });
   it('voisines : coin 3, bord 5, centre 8, et les cases absentes ne comptent pas', () => {
     expect(g.neighbors(0, 4, 4)).toHaveLength(3);
@@ -66,7 +65,8 @@ describe('plateau', () => {
     }
   });
   it('une case absente ne se creuse ni ne se marque', () => {
-    const s = g.newLevel(2); // croix : le coin 0 est absent
+    const s = g.newLevel(2);
+    s.board = g.boardOf(2, g.SHAPES.find((x) => x.id === 'etoile')!, 3); // étoile : le coin 0 est absent
     expect(s.board.cells[0]!.gone).toBe(true);
     expect(g.dig(s, 0, g.seeded(1)).type).toBe('ignored');
     expect(g.toggleFlag(s, 0)).toBe(false);
@@ -94,7 +94,7 @@ describe('creuser', () => {
   const trapIndex = (s: g.State) => s.board.cells.findIndex((c) => g.isTrap(c.kind));
   it('un piège coûte une vie et casse la série', () => {
     const s = g.newLevel(4);
-    g.dig(s, 0, g.seeded(3));
+    g.dig(s, firstLive(s.board), g.seeded(3));
     s.combo = 5;
     const r = g.dig(s, trapIndex(s), g.seeded(1));
     expect(r.type).toBe('trap');
