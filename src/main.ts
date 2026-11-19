@@ -383,14 +383,14 @@ function renderHome() {
 }
 function openHome() { playing = false; renderHome(); show('home'); }
 
-const ROW = 96, PAD = 84;
+const ROW = 96, PAD = 84, WG = 70;
 const xOf = (l: number) => 50 + 28 * Math.sin((l - 1) * 0.95);
 function renderMap() {
   const cur = unlocked(prog);
-  const count = Math.min(game.MAX_LEVEL, Math.max(30, cur + 14));
-  const H = count * ROW + PAD * 2;
-  const yOf = (l: number) => H - PAD - (l - 1) * ROW;
-  const seg = (l: number) => `C ${xOf(l).toFixed(1)} ${yOf(l) - ROW / 2} ${xOf(l + 1).toFixed(1)} ${yOf(l + 1) + ROW / 2} ${xOf(l + 1).toFixed(1)} ${yOf(l + 1)}`;
+  const count = game.MAX_LEVEL;
+  const H = count * ROW + PAD * 2 + (game.WORLDS.length - 1) * WG + 30;
+  const yOf = (l: number) => H - PAD - (l - 1) * ROW - game.worldOf(l) * WG;
+  const seg = (l: number) => { const h = (yOf(l) - yOf(l + 1)) / 2; return `C ${xOf(l).toFixed(1)} ${yOf(l) - h} ${xOf(l + 1).toFixed(1)} ${yOf(l + 1) + h} ${xOf(l + 1).toFixed(1)} ${yOf(l + 1)}`; };
   const path = (to: number) => { let d = `M ${xOf(1).toFixed(1)} ${yOf(1)}`; for (let l = 1; l < to; l++) d += ' ' + seg(l); return d; };
   let nodes = '', deco = '';
   for (let l = 1; l <= count; l++) {
@@ -402,10 +402,17 @@ function renderMap() {
       : state === 'cur' ? `${l}<svg class="you" viewBox="0 0 240 240" aria-hidden="true" focusable="false">${MOLE}</svg>`
       : `${l}<span class="lk">${icon('lock', '')}</span>`;
     nodes += `<button type="button" class="node ${state}" data-l="${l}" data-s="left:${xOf(l).toFixed(1)}%;top:${yOf(l)}px" aria-label="${label}"${state === 'lock' ? ' aria-disabled="true"' : ''}>${inner}</button>`;
+    if (l % game.WORLD_SIZE === 1) {
+      const w = game.worldOf(l), got = Object.entries(prog.levels).filter(([k]) => game.worldOf(Number(k)) === w).reduce((a, [, r]) => a + r.stars, 0);
+      const open = l <= cur;
+      nodes += `<div class="world-banner${open ? '' : ' off'}" data-w="${w}" data-s="top:${yOf(l) + ROW / 2 + WG / 2 - 8}px"><span class="wn">Monde ${w + 1}</span><span class="wt">${game.WORLDS[w]}</span><span class="wc">${open ? icon('star', '') + got + '/' + game.WORLD_SIZE * 3 : icon('lock', '')}</span></div>`;
+    }
     if (l % 2 === 0) deco += `<svg class="deco" viewBox="0 0 48 48" data-s="left:${xOf(l) > 50 ? 12 : 88}%;top:${yOf(l) + ROW / 2}px" aria-hidden="true" focusable="false">${MOUND}</svg>`;
   }
   $('map').innerHTML = `<div class="map-bar"><button id="map-back" type="button" class="btn btn-icon" aria-label="Accueil">${icon('back', 'h-7 w-7')}</button>
-    <h2 class="logo">Niveaux</h2><span class="chip">${icon('star', '')}${fmt(totalStars(prog))}</span></div>
+    <button id="w-prev" type="button" class="btn btn-icon" aria-label="Monde précédent"><svg class="h-7 w-7" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <h2 class="logo" id="w-name" aria-live="polite">Monde 1</h2>
+    <button id="w-next" type="button" class="btn btn-icon" aria-label="Monde suivant"><span class="flip"><svg class="h-7 w-7" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button><span class="chip">${icon('star', '')}${fmt(totalStars(prog))}</span></div>
     <div class="map-world" data-s="height:${H}px">${deco}<svg class="trail" viewBox="0 0 100 ${H}" preserveAspectRatio="none" aria-hidden="true"><path d="${path(count)}" stroke="#2b1d14" stroke-width="22"/><path d="${path(count)}" stroke="#fff0c4" stroke-width="14"/><path d="${path(Math.min(count, cur))}" stroke="#ffc21a" stroke-width="14"/></svg>${nodes}</div>`;
   applyStyles($('map'));
   $('map-back').addEventListener('click', () => { snd.tab(); openHome(); });
@@ -416,6 +423,23 @@ function renderMap() {
     snd.tab();
     levelSheet(l);
   }));
+  const m = $('map');
+  const firstY = (w: number) => yOf(w * game.WORLD_SIZE + 1);
+  const worldNow = () => {
+    const mid = m.scrollTop + m.clientHeight / 2 + 40;
+    let best = 0;
+    for (let w = 0; w < game.WORLDS.length; w++) if (firstY(w) + WG >= mid) best = w;
+    return best;
+  };
+  const label = () => { const w = worldNow(); $('w-name').textContent = `Monde ${w + 1}`; };
+  const jump = (dir: number) => {
+    snd.tab();
+    const w = Math.max(0, Math.min(game.WORLDS.length - 1, worldNow() + dir));
+    m.scrollTo({ top: Math.max(0, firstY(w) - m.clientHeight / 2 - ROW / 2 + 60), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  };
+  $('w-prev').addEventListener('click', () => jump(-1));
+  $('w-next').addEventListener('click', () => jump(1));
+  m.onscroll = label;
   return yOf(cur);
 }
 function openMap() {
@@ -424,16 +448,19 @@ function openMap() {
   show('map');
   const m = $('map');
   m.scrollTop = Math.max(0, y - m.clientHeight / 2);
+  m.dispatchEvent(new Event('scroll'));
 }
 
 function levelSheet(l: number) {
   const s = game.levelSpec(l), rec = prog.levels[l];
   modal(`<h2 id="ov-title" class="logo text-4xl">Niveau ${l}</h2>
-    <p class="mt-1 text-xl font-bold">${s.shape.name}</p>
+    <p class="mt-1 text-sm font-bold">Monde ${game.worldOf(l) + 1} · ${game.WORLDS[game.worldOf(l)]}</p>
+    <p class="text-xl font-bold">${s.shape.name}</p>
     <div class="mt-2 flex justify-center">${shapeSvg(s.shape.rows)}</div>
     <div class="mt-2">${starRow(rec?.stars ?? 0)}</div>
     <p class="mt-2 text-base font-bold">${plural(s.cells, 'case')} · ${plural(s.traps, 'piège')} · ${plural(game.START_LIVES, 'vie')}</p>
     ${rec ? `<p class="text-sm font-bold">Meilleur score : ${fmt(rec.score)}</p>` : ''}
+    ${s.intro ? `<p class="note mt-2 text-base font-bold">Nouveau : ${s.intro.toLowerCase()} !</p>` : ''}
     ${l === 1 && !prog.tuto ? '<p class="note mt-2 text-base font-bold">Un mini tuto t\'attend.</p>' : ''}
     <button id="go" type="button" class="btn btn-big mt-3 w-full" data-focus>${icon('play', 'h-7 w-7')}Jouer</button>
     <button id="close" type="button" class="btn btn-ghost mt-2 w-full">Fermer</button>`);

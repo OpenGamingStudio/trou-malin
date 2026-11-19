@@ -157,7 +157,7 @@ html, body {
 
 #map { background: #7bd957; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 .map-bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 0.5rem; padding: max(0.5rem, env(safe-area-inset-top)) 0.5rem 0.5rem; background: #5ec6f5; border-bottom: 4px solid #2b1d14; }
-.map-bar h2 { flex: 1; min-width: 0; text-align: center; font-size: 1.6rem; line-height: 1; }
+.map-bar h2 { flex: 1; min-width: 0; text-align: center; font-size: 1.35rem; line-height: 1; white-space: nowrap; }
 .map-world { position: relative; width: min(100%, 30rem); margin: 0 auto; }
 .map-world svg.trail { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .trail path { fill: none; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
@@ -208,3 +208,11 @@ html, body {
 .node.nope { animation: nudge 0.35s ease-out; }
 .node .lk { position: absolute; right: -0.35rem; bottom: -0.35rem; width: 1.5rem; height: 1.5rem; }
 .coach.nudge { animation: nudge 0.35s ease-out; }
+
+.world-banner { position: absolute; left: 50%; transform: translate(-50%, -50%); width: calc(100% - 1.5rem); max-width: 22rem; min-height: 2.75rem; display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; border: 3px solid #2b1d14; border-radius: 9999px; background: #ff8a3d; box-shadow: 0 4px 0 #2b1d14; color: #2b1d14; z-index: 3; font-weight: 700; pointer-events: none; }
+.world-banner.off { background: #e2d6bd; }
+.world-banner .wn { font-size: 0.85rem; }
+.world-banner .wt { flex: 1; min-width: 0; font-size: 1.15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: inherit; }
+.world-banner .wc { display: inline-flex; align-items: center; gap: 0.15rem; font-size: 1rem; }
+.world-banner .wc svg { width: 1.2rem; height: 1.2rem; }
+.flip { display: inline-flex; transform: scaleX(-1); }
