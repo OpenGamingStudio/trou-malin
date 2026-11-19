@@ -18,3 +18,9 @@ export const STEPS: Step[] = [
   { text: RULE.traps + ' Le Flair de la taupe peut t\'en montrer un.', act: 'ok' },
   { text: 'À toi ! Creuse toutes les cases sans piège pour finir.', act: 'free' },
 ];
+
+/** Action d'un tap/appui long : sur la cible d'une étape dig/flag, l'action attendue gagne sur le mode drapeau. */
+export function tutoAction(step: Step | undefined, i: number, flagMode: boolean, long: boolean): 'dig' | 'flag' {
+  if (step && (step.act === 'dig' || step.act === 'flag') && step.cell === i) return step.act;
+  return long || flagMode ? 'flag' : 'dig';
+}
