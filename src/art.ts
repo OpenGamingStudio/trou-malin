@@ -32,6 +32,13 @@ export const ICONS: Record<string, string> = {
   sound: `<path d="M6 19h8l10-9v28l-10-9H6z" fill="${C.gold}" ${st()}/><path d="M31 17c4 4 4 10 0 14M36 12c7 7 7 17 0 24" fill="none" ${st()}/>`,
   mute: `<path d="M6 19h8l10-9v28l-10-9H6z" fill="#e2d6bd" ${st()}/><path d="M31 18l11 12M42 18L31 30" fill="none" ${st()}/>`,
   star: `<path d="M24 4l6 13 14 2-10 10 3 14-13-7-13 7 3-14L4 19l14-2z" fill="${C.gold}" ${st()}/>`,
+  staroff: `<path d="M24 4l6 13 14 2-10 10 3 14-13-7-13 7 3-14L4 19l14-2z" fill="#e2d6bd" ${st()}/>`,
+  lock: `<path d="M15 21v-6a9 9 0 0118 0v6" fill="none" ${st(4)}/><rect x="9" y="21" width="30" height="21" rx="6" fill="#b8a98c" ${st()}/><circle cx="24" cy="30" r="3.5" fill="${k}"/><path d="M24 32v5" ${st(3)} fill="none"/>`,
+  menu: `<rect x="6" y="8" width="36" height="32" rx="8" fill="${C.white}" ${st()}/><path d="M14 18h20M14 24h20M14 30h20" fill="none" ${st(3.4)}/>`,
+  help: `<circle cx="24" cy="24" r="18" fill="${C.gold}" ${st()}/><path d="M17 19c0-5 4-8 8-8s8 3 7 8c-1 4-6 5-7 9" fill="none" ${st(4)}/><circle cx="24" cy="36" r="2.8" fill="${k}"/>`,
+  back: `<path d="M30 8L14 24l16 16" fill="none" ${st(6)}/>`,
+  retry: `<path d="M38 24a14 14 0 11-5-10.600" fill="none" ${st(5)}/><path d="M36 5v10H26" fill="none" ${st(5)}/>`,
+  play: `<path d="M14 8l26 16-26 16z" fill="${C.grass}" ${st()}/>`,
 };
 export const icon = (id: string, cls = 'h-9 w-9 shrink-0') =>
   `<svg class="${cls}" viewBox="0 0 48 48" aria-hidden="true" focusable="false">${ICONS[id] ?? ''}</svg>`;
@@ -104,3 +111,13 @@ export const MOLE = `
   <g fill="none" stroke="${k}" stroke-width="3.5" stroke-linecap="round"><path d="M70 136l-10 2M72 146l-11 1M70 156l-10-2"/></g>
   <g fill="${C.cream}" stroke="${k}" stroke-width="3" stroke-linejoin="round"><circle cx="50" cy="138" r="3.4"/><circle cx="48" cy="147" r="3.4"/><circle cx="50" cy="156" r="3.4"/></g>
 </g>`;
+
+/** Aperçu d'une forme (cases pleines en terre, contour encre) : sert au choix de niveau. */
+export function shapeSvg(rows: string[], cls = 'h-24 w-24'): string {
+  const w = rows[0]!.length, h = rows.length, u = 12, g = 2;
+  let r = '';
+  rows.forEach((line, y) => [...line].forEach((ch, x) => {
+    if (ch === '#') r += `<rect x="${x * u + g}" y="${y * u + g}" width="${u - g}" height="${u - g}" rx="3" fill="${C.wood}" stroke="${k}" stroke-width="1.6"/>`;
+  }));
+  return `<svg class="${cls}" viewBox="0 0 ${w * u + g} ${h * u + g}" aria-hidden="true" focusable="false">${r}</svg>`;
+}

@@ -1,5 +1,5 @@
 /* Service worker de Trou Malin : réseau d'abord (le jeu est toujours à jour), cache en secours hors ligne. */
-const CACHE = 'trou-malin-v2';
+const CACHE = 'trou-malin-v3';
 self.addEventListener('install', (e) => { self.skipWaiting(); e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', 'manifest.webmanifest', 'favicon.svg']))); });
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));

@@ -20,25 +20,31 @@
   <svg class="c1" viewBox="0 0 90 40"><path d="M6 36c-4-10 3-18 12-16 4-10 20-10 24 0 10-3 18 4 14 16z" fill="#fff" stroke="#2b1d14" stroke-width="3.5" stroke-linejoin="round"/></svg>
   <svg class="c2" viewBox="0 0 90 40"><path d="M6 36c-4-10 3-18 12-16 4-10 20-10 24 0 10-3 18 4 14 16z" fill="#fff" stroke="#2b1d14" stroke-width="3.5" stroke-linejoin="round"/></svg>
 </div>
-<main id="app" class="fixed inset-0 flex flex-col items-center gap-2 overflow-hidden p-2">
+<section id="home" class="screen" hidden aria-label="Accueil"></section>
+<section id="map" class="screen" hidden aria-label="Carte des niveaux"></section>
+<main id="app" class="screen game fixed inset-0 flex flex-col items-center gap-2 overflow-hidden p-2" hidden>
   <header class="grid w-full max-w-[35rem] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
     <div id="mole-box" class="mole-box" data-mood="idle"><svg id="mole-svg" viewBox="0 0 240 240" class="h-full w-full" aria-hidden="true" focusable="false"></svg></div>
     <div class="panel min-w-0 px-3 py-1">
-      <p class="flex items-center justify-between gap-2"><span class="min-w-0 truncate text-3xl font-bold leading-none" id="score" aria-live="off">0</span><span class="shrink-0 rounded-lg border-2 border-ink bg-nugget px-2 text-base font-bold" id="lvl">Manche 1</span></p>
+      <p class="flex items-center justify-between gap-2"><span class="min-w-0 truncate text-3xl font-bold leading-none" id="score" aria-live="off">0</span><span class="shrink-0 rounded-lg border-2 border-ink bg-nugget px-2 text-base font-bold" id="lvl">Niveau 1</span></p>
       <p class="mt-1 flex items-center justify-between gap-1"><span id="hearts" class="flex" role="img" aria-label="Vies"></span><span class="text-sm font-bold" id="left"></span></p>
     </div>
     <button id="snd" type="button" class="btn btn-icon" aria-pressed="true" aria-label="Son"></button>
   </header>
+  <div id="goal" class="goal w-full max-w-[35rem]" aria-label="Objectifs d'étoiles"></div>
   <div class="flex w-full max-w-[35rem] items-center justify-center gap-2"><p id="hint" class="hint min-w-0" aria-live="polite">Creuse un monticule !</p><div id="combo" class="combo" hidden></div></div>
-  <section class="relative grid min-h-0 w-full flex-1 place-items-center" aria-label="Plateau">
+  <div id="coach" class="coach w-full max-w-[35rem]" hidden></div>
+  <section class="stage relative min-h-0 w-full flex-1" aria-label="Plateau">
     <div id="board" class="board" role="grid" aria-label="Plateau de trous"></div>
     <div id="fx" class="pointer-events-none absolute inset-0 z-30 overflow-hidden" aria-hidden="true"></div>
   </section>
-  <footer class="grid w-full max-w-[35rem] grid-cols-2 gap-2">
-    <button id="sniff" type="button" class="btn btn-sm"></button>
-    <button id="flagmode" type="button" class="btn btn-sm" aria-pressed="false"></button>
+  <footer class="grid w-full max-w-[35rem] grid-cols-3 gap-2">
+    <button id="sniff" type="button" class="btn btn-tool"></button>
+    <button id="flagmode" type="button" class="btn btn-tool" aria-pressed="false"></button>
+    <button id="menu" type="button" class="btn btn-tool"></button>
   </footer>
 </main>
+<div id="toast" class="toast" role="status" hidden></div>
 <div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="ov-title"></div>
 </body>
 </html>
