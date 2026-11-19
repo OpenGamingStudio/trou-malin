@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.0
+
+- Carte des niveaux façon jeu de bonbons : chemin sinueux numéroté, niveaux terminés avec étoiles, niveau courant mis en avant, suivants verrouillés, défilement vertical, progression sauvegardée sur l'appareil.
+- Un niveau = une grille, 3 vies, des étoiles : 1 = niveau terminé, 2 = au moins 50 % du maximum du niveau, 3 = au moins 75 %. Barre d'objectifs sous le score.
+- Grilles en 12 formes (carré, croix, losange, zigzag, étoile, cœur, anneau, grande croix, taupe...) : les cases hors forme n'existent pas, les chiffres comptent les voisines existantes.
+- Lisibilité : le chiffre est toujours centré, même taille, même police ; pièce ou gemme = petit badge dans le coin (fond teinté), jamais à la place du chiffre. Couleur du chiffre par valeur.
+- Règles dites dans le jeu : pièces (+10) et gemmes (+50) comptent dans le score et les étoiles ; légende « Comment jouer » ; série comptée en cases ouvertes (x2 dès 4, jusqu'à x5).
+- Mini tuto pas à pas au niveau 1 (creuser, chiffre, drapeau, trésors, pièges et vies), passable et rejouable.
+- Refonte de l'interface : accueil, menu pause, fiche de niveau, écrans de victoire et de défaite, transitions, boutons d'outils.
+
 ## 1.1.0
 
 - Palette et taupe « Plein soleil » de Taupe Tycoon 2.6 (même mascotte dans les deux jeux), ombre sous les éléments.

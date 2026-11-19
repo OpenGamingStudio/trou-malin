@@ -5,13 +5,14 @@ Une taupe doit creuser au **bon endroit**. Chaque monticule cache un trésor (pi
 Jouable dans le navigateur, au doigt ou à la souris : <https://trou-malin.opengamingstudio.com>
 
 ## Règles
-- Touche un monticule pour creuser. Le premier coup est toujours sûr.
-- Un piège coûte une vie (3 au départ) et casse la série. Une vie de plus tous les 3 niveaux.
-- Les bons coups d'affilée font monter le multiplicateur de série (jusqu'à ×5).
-- Ouvre toutes les cases sûres pour réussir la manche : la grille suivante est plus grande et plus piégée.
-- **Drapeau** : bouton « Drapeau » ou appui long (clic droit) pour marquer un piège supposé.
-- **Flair** : la taupe désigne un piège caché (une charge au départ, une de plus par manche, 3 au plus).
-- Le meilleur score est gardé dans le navigateur (`localStorage`).
+- **Carte des niveaux** : un chemin sinueux de niveaux numérotés, étoiles gagnées, niveau suivant verrouillé tant que le précédent n'est pas réussi. Progression gardée dans le navigateur (`localStorage`).
+- **Formes variées** : cœur, étoile, croix, losange, anneau, zigzag, taupe… Les cases absentes ne comptent pas : un chiffre compte les pièges des voisines existantes.
+- Touche un monticule pour creuser. Le premier coup est toujours sûr. Le chiffre indique les pièges voisins (jusqu'à 8).
+- Un piège coûte une vie (3 par niveau) et casse la série.
+- **Points** : case vide 2, pièce 10, gemme 50, multipliés par la série (×2 dès 4 cases sûres d'affilée, ×3 dès 8, ×4 dès 12, ×5 dès 16).
+- **Étoiles** : 1 = niveau réussi, 2 = au moins 50 % du score idéal, 3 = au moins 75 %.
+- **Drapeau** : bouton « Drapeau » ou appui long (clic droit). **Flair** : la taupe désigne un piège caché.
+- **Mini tuto** pas à pas au niveau 1 (passable), rejouable depuis le menu.
 
 ## Développement
 ```
