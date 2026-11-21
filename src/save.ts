@@ -38,6 +38,8 @@ export function unlocked(p: Progress): number {
   while (p.levels[n] && n < MAX_LEVEL) n++;
   return n;
 }
+/** Les 100 niveaux sont tous terminés. */
+export const levelsDone = (p: Progress): boolean => !!p.levels[MAX_LEVEL];
 export const totalStars = (p: Progress): number => Object.values(p.levels).reduce((a, r) => a + r.stars, 0);
 
 /** Enregistre un niveau gagné en gardant le meilleur (étoiles et score). Renvoie si les étoiles progressent. */

@@ -35,7 +35,7 @@ const SHAPE_LIST: Shape[] = [
   { id: 'escalier', name: 'Escalier', rows: ['#.....', '##....', '###...', '####..', '#####.', '######'] },
   { id: 'coeur', name: 'Cœur', rows: ['.##.##', '######', '######', '.####.', '..##..'] },
   { id: 'losange', name: 'Losange', rows: ['..#..', '.###.', '#####', '#####', '#####', '.###.', '..#..'] },
-  { id: 'carre5', name: 'Carré', rows: ['..##..', '.####.', '######', '.####.', '##..##'] },
+  { id: 'carre5', name: 'Carré', rows: ['#####', '#####', '#####', '#####', '#####'] },
   { id: 'anneau', name: 'Anneau', rows: ['.####.', '######', '##..##', '##..##', '######', '.####.'] },
   { id: 'taupe', name: 'Taupe', rows: ['##..##', '######', '######', '######', '.####.', '..##..'] },
   { id: 'pont', name: 'Pont', rows: ['######', '######', '##..##', '##..##', '######', '######'] },
@@ -86,7 +86,8 @@ const INTROS: Record<number, string> = {
 export function levelSpec(lvl: number): Level {
   const l = Math.min(MAX_LEVEL, Math.max(1, Math.floor(lvl)));
   const n = SHAPES.length;
-  const idx = Math.min(n - 1, Math.floor(((l - 1) * (n - 6)) / (MAX_LEVEL - 1)) + (((l - 1) * 5) % 6));
+  // le niveau final est toujours le plus grand bloc ; avant, la forme monte avec un petit décalage pour varier
+  const idx = l === MAX_LEVEL ? n - 1 : Math.min(n - 1, Math.floor(((l - 1) * (n - 6)) / (MAX_LEVEL - 1)) + (((l - 1) * 5) % 6));
   const shape = SHAPES[idx]!;
   const cells = shapeCells(shape);
   const ratio = 0.14 + (0.13 * (l - 1)) / (MAX_LEVEL - 1);

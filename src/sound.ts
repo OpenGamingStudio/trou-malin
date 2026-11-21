@@ -13,7 +13,7 @@ export const setEnabled = (v: boolean) => { enabled = v; if (master && ctx) mast
 
 /** À appeler depuis un geste (clic, touche) : crée le contexte audio, jamais avant. */
 export function unlock() {
-  if (ctx) { if (ctx.state === 'suspended' && !document.hidden) void ctx.resume(); return; }
+  if (ctx) { if (ctx.state !== 'running' && !document.hidden) void ctx.resume(); return; }
   try {
     const C = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!C) return;

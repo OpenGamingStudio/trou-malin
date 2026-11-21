@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.1
+
+- Forme « Carré » corrigée (5x5, elle dessinait une étoile) ; test d'unicité des formes ; le niveau 100 est le grand bloc (48 cases), chaque forme sert.
+- Cases toujours >= 44 px : le plateau défile si l'écran est trop petit.
+- Échap n'ouvre plus la pause pendant l'animation de fin ; son iOS repris au clic ; perdre pendant le tuto garde l'étape ; plateau sans rôle grid orphelin ; une fois les 100 niveaux finis, l'accueil propose « Choisir un niveau ».
+
 ## 2.1.0
 
 - 100 niveaux jouables en 10 mondes de 10 (Prairie, Verger, Potager, Colline, Forêt, Rivière, Falaise, Grotte, Mine, Cœur de terre). 18 formes de grille, de 16 à 48 cases, de plus en plus grandes ; part de pièges de 14 % à 27 %.

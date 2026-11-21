@@ -6,7 +6,7 @@ import { fmt } from './format';
 import { VERSION } from './version';
 import { RULE } from './rules';
 import { STEPS, tutoAction } from './tuto';
-import { loadProgress, saveProgress, loadOpts, saveOpts, mergeLevel, unlocked, totalStars } from './save';
+import { loadProgress, saveProgress, loadOpts, saveOpts, mergeLevel, unlocked, totalStars, levelsDone } from './save';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const rng = Math.random;
@@ -92,8 +92,7 @@ function paintCell(i: number, el: HTMLButtonElement) {
   const c = st.board.cells[i]!;
   el.className = 'cell' + (c.open ? ' open ' + (game.isTrap(c.kind) ? 'trap' : 'safe') + (c.kind === 'coin' ? ' has-coin' : c.kind === 'gem' ? ' has-gem' : '') : '') + (isTarget(i) ? ' target' : '');
   el.setAttribute('aria-label', cellLabel(i));
-  el.setAttribute('role', 'gridcell');
-  let h = '';
+    let h = '';
   if (!c.open) {
     h = `<svg class="art" viewBox="0 0 48 48" aria-hidden="true" focusable="false">${MOUND}</svg>`;
     if (c.flag) h += `<span class="flag">${icon('flag', '')}</span>`;
@@ -271,8 +270,15 @@ function loseLevel() {
     <p class="stat"><span>Meilleure série</span><span>${fmt(st.bestCombo)}</span></p></div>
     <button id="retry" type="button" class="btn btn-big mt-3 w-full" data-focus>${icon('retry', 'h-7 w-7')}Réessayer</button>
     <button id="tomap" type="button" class="btn btn-ghost mt-2 w-full">Carte</button>`);
-  on('#retry', () => (mode === 'tuto' ? startTuto() : startLevel(st.lvl)));
-  on('#tomap', openMap);
+  on('#retry', () => (mode === 'tuto' ? retryTuto() : startLevel(st.lvl)));
+  on('#tomap', mode === 'tuto' ? () => tutoEnd(false) : openMap);
+}
+/** Perdu pendant le tuto : on rend les vies et on garde l'étape en cours. */
+function retryTuto() {
+  closeModal();
+  st.lives = game.START_LIVES; st.over = false;
+  playing = true; busy = false;
+  hud(); coachUi();
 }
 
 function winLevel() {
@@ -366,16 +372,16 @@ function onFlag(i: number) {
 
 // --- accueil, carte, aide ---
 function renderHome() {
-  const cur = unlocked(prog), stars = totalStars(prog);
+  const cur = unlocked(prog), stars = totalStars(prog), allDone = levelsDone(prog);
   $('home').innerHTML = `<div class="panel"><div class="mx-auto h-28 w-28"><svg viewBox="0 0 240 240" class="h-full w-full" aria-hidden="true" focusable="false">${MOLE}</svg></div>
     <h1 id="ov-title" class="logo logo-big">Trou Malin</h1>
     <p class="mt-2 text-lg">Creuse au bon endroit : trésors à trouver, pièges à éviter !</p>
     <p class="mt-3 flex justify-center gap-4"><span class="flex items-center gap-1">${icon('bomb', 'h-8 w-8')}${icon('bear', 'h-8 w-8')}${icon('water', 'h-8 w-8')}</span><span class="flex items-center gap-1">${icon('coin', 'h-8 w-8')}${icon('gem', 'h-8 w-8')}</span></p>
     ${stars > 0 ? `<p class="stat mt-3"><span class="flex items-center gap-1">${icon('star', 'h-6 w-6')}Étoiles</span><span>${fmt(stars)}</span></p>` : ''}
-    <button id="play" type="button" class="btn btn-big mt-3 w-full">${icon('play', 'h-7 w-7')}${cur > 1 ? `Niveau ${cur}` : 'Jouer'}</button>
+    <button id="play" type="button" class="btn btn-big mt-3 w-full">${icon('play', 'h-7 w-7')}${allDone ? 'Choisir un niveau' : cur > 1 ? `Niveau ${cur}` : 'Jouer'}</button>
     <div class="mt-2 grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2"><button id="maps" type="button" class="btn btn-ghost">Niveaux</button><button id="howto" type="button" class="btn btn-ghost" aria-label="Comment jouer">${icon('help', 'h-7 w-7')}</button><button id="snd2" type="button" class="btn btn-ghost" aria-pressed="${opts.sound}" aria-label="${opts.sound ? 'Couper le son' : 'Activer le son'}">${icon(opts.sound ? 'sound' : 'mute', 'h-7 w-7')}</button></div>
     <p class="mt-3 text-sm font-bold">Version ${VERSION}</p></div>`;
-  $('play').addEventListener('click', () => { snd.unlock(); startLevel(cur); });
+  $('play').addEventListener('click', () => { snd.unlock(); if (allDone) openMap(); else startLevel(cur); });
   $('maps').addEventListener('click', () => { snd.unlock(); openMap(); });
   $('howto').addEventListener('click', () => { snd.unlock(); helpModal(); });
   $('snd2').addEventListener('click', toggleSound);
@@ -549,10 +555,11 @@ $('sniff').addEventListener('click', () => {
 });
 $('menu').addEventListener('click', () => { if (busy || !playing) return; snd.unlock(); snd.tab(); pauseModal(); });
 $('snd').addEventListener('click', toggleSound);
+document.addEventListener('click', () => snd.unlock(), true);
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if (modalOpen()) { overlay.querySelector<HTMLElement>('#close, #resume')?.click(); return; }
-  if (view === 'game' && playing) pauseModal();
+  if (view === 'game' && playing && !busy) pauseModal();
 });
 document.addEventListener('visibilitychange', () => snd.onVisibility(document.hidden));
 
