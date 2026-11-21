@@ -31,3 +31,11 @@ describe('sauvegarde', () => {
     expect(fmt(1500000)).toBe('1 500K');
   });
 });
+
+import { levelsDone } from '../src/save';
+describe('fin du jeu', () => {
+  it('levelsDone vrai seulement quand le niveau 100 est fait', () => {
+    expect(levelsDone({ tuto: true, levels: {} } as never)).toBe(false);
+    expect(levelsDone({ tuto: true, levels: { 100: { stars: 1, score: 1 } } } as never)).toBe(true);
+  });
+});

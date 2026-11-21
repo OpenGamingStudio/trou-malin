@@ -66,8 +66,8 @@ html, body {
   .logo { @apply font-bold text-soil; -webkit-text-stroke: 1px #2b1d14; paint-order: stroke fill; text-shadow: 0 2px 0 #2b1d14; }
 
   /* plateau : la zone .stage mesure l'espace libre, le plateau y tient (largeur ET hauteur) quelle que soit la forme */
-  .stage { container-type: size; display: grid; place-items: center; place-content: center; }
-  .board { display: grid; gap: 6px; width: min(100cqw, 35rem, calc(100cqh * var(--cols, 1) / var(--rows, 1))); aspect-ratio: var(--cols, 1) / var(--rows, 1); touch-action: manipulation; }
+  .stage { container-type: size; display: flex; overflow: auto; overscroll-behavior: contain; }
+  .board { display: grid; gap: 6px; margin: auto; flex: none; width: min(100cqw, 35rem, calc(100cqh * var(--cols, 1) / var(--rows, 1))); min-width: calc(var(--cols, 1) * 45px + (var(--cols, 1) - 1) * 6px); aspect-ratio: var(--cols, 1) / var(--rows, 1); touch-action: manipulation; }
   .void { display: block; pointer-events: none; }
   .cell { @apply relative grid place-items-center overflow-hidden rounded-2xl border-[3px] border-ink bg-grass p-0 shadow-hard; container-type: size; min-width: 0; min-height: 0; -webkit-user-select: none; user-select: none; touch-action: manipulation; transition: transform 0.08s ease-out, box-shadow 0.08s ease-out; }
   .board.fresh .cell { animation: appear 0.3s ease-out backwards; animation-delay: calc(var(--k, 0) * 14ms); }
