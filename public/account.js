@@ -1,12 +1,12 @@
 /*!
- * account.js 1.0.1 - compte et sauvegarde multi-jeux d'OpenGamingStudio (MIT).
+ * account.js 1.2.0 - compte et sauvegarde multi-jeux d'OpenGamingStudio (MIT).
  * Sans dépendance, à copier tel quel dans chaque jeu. Le jeu reste utilisable sans compte.
  *
  *   OGSAccount.init({
  *     game: 'trou-malin',               // identifiant du jeu (a-z, 0-9, tiret)
  *     version: '2.1.1',                 // version du jeu (affichée dans la sauvegarde)
- *     getState: () => ({...}),          // l'état à sauvegarder (objet JSON)
- *     setState: (obj) => {...},         // applique un état venant du compte (le jeu se rafraîchit)
+ *     getSave: () => ({...}),           // le contrat : l'état à sauvegarder (objet JSON)  [alias : getState]
+ *     applySave: (data) => {...},       // applique une sauvegarde venant du compte        [alias : setState]
  *     isEmpty: (obj) => boolean,        // optionnel : true si l'état local est vierge
  *     describe: (obj) => 'texte court', // optionnel : résumé affiché pour choisir en cas de conflit
  *     color: '#FFB703',                 // optionnel : couleur d'identité du jeu
@@ -17,7 +17,7 @@
 (function () {
   'use strict';
   var API = 'https://api.opengamingstudio.com';
-  var wanted = true, cfg, user = null, pending = null, root, btn, dot, panel, lastHash = '', pushTimer = 0, busy = false, status = { kind: 'anon' }, retryAt = 0;
+  var wanted = true, cfg, user = null, me = { hasCode: false, identities: [], providers: [] }, notice = '',  pending = null, root, btn, dot, panel, lastHash = '', pushTimer = 0, busy = false, status = { kind: 'anon' }, retryAt = 0;
 
   // ---- utilitaires ----
   function hash(o) { var s = JSON.stringify(o), h = 5381; for (var i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0; return h + ':' + s.length; }
@@ -47,11 +47,42 @@
     pseudo_invalide: 'Le pseudo fait de 3 à 20 caractères : lettres, chiffres, _ ou -.',
     identifiants_invalides: 'Pseudo ou code incorrect.',
     trop_de_jeux: 'Trop de jeux sauvegardés sur ce compte.',
-    sauvegarde_trop_grosse: 'La sauvegarde est trop grosse.'
+    sauvegarde_trop_grosse: 'La sauvegarde est trop grosse.',
+    refuse: 'Connexion annulée.',
+    echec_fournisseur: 'La connexion a échoué. Réessaie dans un instant.',
+    deja_lie: 'Ce compte Google ou Discord est déjà lié à un autre compte du studio.',
+    non_connecte: 'Connecte-toi d’abord, puis réessaie.',
+    derniere_methode: 'Garde au moins une façon de te connecter.'
   };
   function errText(r) {
     if (r.status === 429) { var m = Math.max(1, Math.ceil((r.json.retryAfter || 60) / 60)); return 'Trop d’essais. Réessaie dans ' + m + ' minute' + (m > 1 ? 's' : '') + '.'; }
     return ERR[r.json && r.json.error] || 'Une erreur est survenue. Réessaie.';
+  }
+
+  var PNAMES = { google: 'Google', discord: 'Discord' };
+  function loadMe() {
+    return api('GET', '/v1/me').then(function (r) { if (r.status === 200) { user = r.json.pseudo; me = r.json; } if (panel) renderPanel(); paint(); }, function () { /* hors ligne */ });
+  }
+  function loadProviders() {
+    return api('GET', '/v1/providers').then(function (r) { if (r.status === 200) { me.providers = r.json.providers || []; if (panel) renderPanel(); } }, function () { /* hors ligne */ });
+  }
+  function cleanUrl() {
+    var u = new URL(location.href); u.searchParams.delete('ogs_auth'); u.searchParams.delete('ogs_error'); return u.toString();
+  }
+  /** Va chez Google / Discord (page entière) ; l'API revient sur cette page. Un lien (link) ajoute la méthode au compte actuel. */
+  function goProvider(name, link) {
+    flush();
+    location.href = cfg.apiBase + '/auth/' + name + '/start?return=' + encodeURIComponent(cleanUrl()) + (link ? '&link=1' : '');
+  }
+  /** Au retour d'un fournisseur : ogs_auth=ok|lie|erreur (+ ogs_error), puis on nettoie l'adresse. */
+  function handleReturn() {
+    var u = new URL(location.href), a = u.searchParams.get('ogs_auth');
+    if (!a) return false;
+    var e = u.searchParams.get('ogs_error');
+    try { history.replaceState(null, '', cleanUrl()); } catch (x) { /* ignoré */ }
+    if (a === 'erreur') fields.error = ERR[e] || 'La connexion a échoué.';
+    else notice = a === 'lie' ? 'Méthode de connexion ajoutée.' : 'Connecté.';
+    return true;
   }
 
   // ---- synchronisation ----
@@ -95,7 +126,7 @@
       busy = true;
       var meta = loadMeta();
       push(meta.user === user ? meta.rev || 0 : 0).then(function () { busy = false; }, function () { busy = false; });
-    }, 3000);
+    }, 10000); // anti-rebond : 10 s après la dernière modification
   }
   function tick() {
     if (!user || pending || busy) return;
@@ -142,6 +173,9 @@
     '.code{font-size:22px;font-weight:700;letter-spacing:1px;text-align:center;background:var(--c);border:3px solid #1b1b2f;border-radius:14px;padding:12px 8px;word-break:break-all;user-select:all}',
     '.qr{display:block;margin:12px auto;width:200px;height:200px;border:3px solid #1b1b2f;border-radius:8px;background:#fff}',
     '.chk{display:flex;gap:10px;align-items:center;min-height:48px;font-weight:600}.chk input{width:28px;height:28px;flex:none}',
+    'h3{margin:12px 0 8px;font-size:18px;font-weight:700}.ok{background:#dff7e8;border:3px solid #1fa764;border-radius:12px;padding:8px 12px;margin-bottom:12px;font-weight:600}.sep{text-align:center;margin:12px 0}',
+    '.meth{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}.meth strong{flex:1 1 100%}.meth .s{flex:1 1 auto}.meth button.k{width:auto;flex:none}',
+    'button.k.prov{background:#fff}button.k.prov.google{border-color:#4285f4}button.k.prov.discord{border-color:#5865f2}',
     '.two{display:flex;flex-direction:column;gap:10px}.card{border:3px solid #1b1b2f;border-radius:14px;padding:12px}.card strong{display:block}',
     '@media (prefers-reduced-motion:no-preference){.b{transition:background .12s}}'
   ].join('\n');
@@ -169,6 +203,7 @@
   }
   function openPanel() {
     if (panel) return;
+    if (!user) loadProviders();
     panel = el('div', { class: 'o', onclick: function (e) { if (e.target === panel && !canClose()) return; if (e.target === panel) closePanel(); } });
     root.appendChild(panel);
     view = user ? 'account' : (view === 'register' ? 'register' : 'login');
@@ -199,8 +234,8 @@
     var p = kind === 'register' ? api('POST', '/v1/register', { pseudo: fields.pseudo }) : api('POST', '/v1/login', { pseudo: fields.pseudo, code: codeIn.value });
     p.then(function (r) {
       fields.working = false;
-      if (r.status === 201) { user = r.json.pseudo; fields.created = r.json; fields.ack = false; fields.copied = false; view = 'created'; saveMeta({}); paint(); sync(); }
-      else if (r.status === 200) { user = r.json.pseudo; view = 'account'; fields.error = ''; paint(); sync(); }
+      if (r.status === 201) { user = r.json.pseudo; fields.created = r.json; fields.ack = false; fields.copied = false; view = 'created'; saveMeta({}); me = { hasCode: true, identities: [], providers: me.providers }; paint(); sync(); }
+      else if (r.status === 200) { user = r.json.pseudo; view = 'account'; fields.error = ''; paint(); loadMe(); sync(); }
       else { fields.error = errText(r); renderPanel(); }
     }, function () { fields.working = false; fields.error = 'Pas de connexion à internet. Le jeu reste sauvegardé sur cet appareil.'; renderPanel(); });
   }
@@ -224,7 +259,7 @@
       p.appendChild(two); focus = b1;
     } else if (view === 'created' && fields.created) {
       var c = fields.created;
-      p.appendChild(el('h2', { text: 'Compte créé : ' + c.pseudo }));
+      p.appendChild(el('h2', { text: c.again ? 'Nouveau code de récupération' : (c.fresh ? 'Code de récupération créé' : 'Compte créé : ' + c.pseudo) }));
       p.appendChild(el('p', { text: 'Voici ton code de récupération. Il ne s’affiche qu’une seule fois : note-le ou copie-le. Sans lui, impossible de te reconnecter.' }));
       p.appendChild(el('div', { class: 'code', text: c.code }));
       var row = el('div', { class: 'col mt' });
@@ -240,22 +275,55 @@
       p.appendChild(go); focus = row.firstChild;
     } else if (view === 'account' && user) {
       p.appendChild(el('h2', { text: 'Salut ' + user + ' !' }));
-      var msg = status.kind === 'ok' ? (status.at ? 'Ta progression est sauvegardée (' + when(status.at) + ').' : 'Ton compte est prêt. La progression se sauvegarde toute seule.')
+      var msg = status.kind === 'ok' ? (status.at ? 'Ta progression est sauvegardée toute seule (' + when(status.at) + ').' : 'Ton compte est prêt. La progression se sauvegarde toute seule.')
         : status.kind === 'error' ? 'Pas de réseau pour l’instant. Ta progression reste sur cet appareil et partira dès que possible.' : 'Synchronisation en cours…';
       p.appendChild(el('p', { text: msg }));
-      var col = el('div', { class: 'col' });
-      var sb = el('button', { class: 'k main', type: 'button', onclick: function () { sync(); } }, 'Synchroniser maintenant');
-      col.appendChild(sb);
-      col.appendChild(el('button', { class: 'k', type: 'button', onclick: function () { api('POST', '/v1/logout', {}).then(function () { user = null; saveMeta({}); view = 'login'; setStatus({ kind: 'anon' }); }, function () { user = null; view = 'login'; setStatus({ kind: 'anon' }); }); } }, 'Se déconnecter'));
+      if (notice) { p.appendChild(el('div', { class: 'ok', role: 'status', text: notice })); notice = ''; }
+      if (fields.error) p.appendChild(el('div', { class: 'err', role: 'alert', text: fields.error }));
+      p.appendChild(el('h3', { text: 'Façons de te connecter' }));
+      var meths = el('div', { class: 'col' });
+      var only = me.identities.length + (me.hasCode ? 1 : 0) <= 1;
+      function methodRow(label, linked, linkBtn, unlinkBtn, off) {
+        return el('div', { class: 'card meth' }, el('strong', { text: label }), el('span', { class: 's', text: linked ? 'Activée' : (off || 'Pas encore liée') }), linked ? unlinkBtn : linkBtn);
+      }
+      var codeBtn = el('button', { class: 'k', type: 'button', onclick: function () {
+        if (me.hasCode && !window.confirm('Créer un nouveau code ? L’ancien ne marchera plus.')) return;
+        api('POST', '/v1/me/code', {}).then(function (r) {
+          if (r.status === 200) { r.json.fresh = true; fields.created = r.json; fields.ack = false; fields.copied = false; view = 'created'; me.hasCode = true; renderPanel(); }
+          else { fields.error = errText(r); renderPanel(); }
+        }, function () { fields.error = 'Pas de connexion à internet.'; renderPanel(); });
+      } }, me.hasCode ? 'Nouveau code' : 'Créer un code');
+      meths.appendChild(methodRow('Pseudo + code de récupération', me.hasCode, codeBtn, codeBtn, 'Pas encore créé'));
+      Object.keys(PNAMES).forEach(function (n) {
+        if (me.identities.indexOf(n) < 0 && me.providers.indexOf(n) < 0) return;
+        var on = me.identities.indexOf(n) >= 0;
+        var lb = el('button', { class: 'k', type: 'button', onclick: function () { goProvider(n, true); } }, 'Lier ' + PNAMES[n]);
+        var ub = el('button', { class: 'k', type: 'button', onclick: function () {
+          api('DELETE', '/v1/me/identities/' + n).then(function (r) { if (r.status === 200) { me = r.json; fields.error = ''; } else fields.error = errText(r); renderPanel(); });
+        } }, 'Retirer');
+        ub.disabled = only;
+        meths.appendChild(methodRow(PNAMES[n], on, lb, ub));
+      });
+      p.appendChild(meths);
+      var col = el('div', { class: 'col mt' });
+      col.appendChild(el('button', { class: 'k', type: 'button', onclick: function () { api('POST', '/v1/logout', {}).then(function () { user = null; saveMeta({}); view = 'login'; setStatus({ kind: 'anon' }); loadProviders(); }, function () { user = null; view = 'login'; setStatus({ kind: 'anon' }); }); } }, 'Se déconnecter'));
       col.appendChild(el('button', { class: 'k danger', type: 'button', onclick: function () {
         if (!window.confirm('Supprimer ton compte et toutes ses sauvegardes ? Ta progression restera sur cet appareil.')) return;
         api('DELETE', '/v1/me').then(function () { user = null; saveMeta({}); view = 'login'; setStatus({ kind: 'anon' }); });
       } }, 'Supprimer mon compte'));
-      col.appendChild(el('button', { class: 'k', type: 'button', onclick: closePanel }, 'Fermer'));
-      p.appendChild(col); focus = sb;
+      var closeB = el('button', { class: 'k main', type: 'button', onclick: closePanel }, 'Fermer');
+      col.appendChild(closeB);
+      p.appendChild(col); focus = closeB;
     } else {
       p.appendChild(el('h2', { text: 'Ton compte' }));
       p.appendChild(el('p', { class: 's', text: 'Sauvegarde ta progression et retrouve-la sur tous tes appareils. Pas d’e-mail, pas de nom réel : juste un pseudo.' }));
+      var provs = me.providers.filter(function (n) { return PNAMES[n]; });
+      if (provs.length) {
+        var pb = el('div', { class: 'col' });
+        provs.forEach(function (n) { pb.appendChild(el('button', { class: 'k prov ' + n, type: 'button', onclick: function () { goProvider(n, false); } }, 'Continuer avec ' + PNAMES[n])); });
+        p.appendChild(pb);
+        p.appendChild(el('p', { class: 's sep', text: 'ou avec un pseudo' }));
+      }
       var tabs = el('div', { class: 't', role: 'tablist' });
       tabs.appendChild(el('button', { class: 'k' + (view === 'register' ? ' on' : ''), type: 'button', role: 'tab', 'aria-selected': view === 'register', onclick: function () { view = 'register'; fields.error = ''; renderPanel(); } }, 'Créer un compte'));
       tabs.appendChild(el('button', { class: 'k' + (view !== 'register' ? ' on' : ''), type: 'button', role: 'tab', 'aria-selected': view !== 'register', onclick: function () { view = 'login'; fields.error = ''; renderPanel(); } }, 'Se connecter'));
@@ -292,14 +360,22 @@
   }
 
   window.OGSAccount = {
-    version: '1.0.1',
+    version: '1.2.0',
     init: function (c) {
       if (cfg) return;
-      if (!c || !/^[a-z0-9][a-z0-9-]{0,39}$/.test(c.game || '') || typeof c.getState !== 'function' || typeof c.setState !== 'function') return;
-      cfg = c; cfg.apiBase = c.apiBase || API;
+      c = c || {};
+      // Contrat simple : getSave() renvoie l'état, applySave(data) l'applique (anciens noms : getState / setState).
+      var gs = c.getSave || c.getState, as = c.applySave || c.setState;
+      if (!/^[a-z0-9][a-z0-9-]{0,39}$/.test(c.game || '') || typeof gs !== 'function' || typeof as !== 'function') return;
+      c.getState = gs; c.setState = as; cfg = c; cfg.apiBase = c.apiBase || API;
       function start() {
+        var back = handleReturn();
         mount(); lastHash = hash(cfg.getState());
-        api('GET', '/v1/me').then(function (r) { if (r.status === 200) { user = r.json.pseudo; setStatus({ kind: 'sync' }); return sync(); } }, function () { /* hors ligne : le jeu continue en local */ });
+        // Session détectée au chargement (cookie multidomaine, fetch avec credentials) : restauration automatique, sans bouton.
+        api('GET', '/v1/me').then(function (r) {
+          if (r.status === 200) { user = r.json.pseudo; me = r.json; setStatus({ kind: 'sync' }); view = 'account'; if (back) openPanel(); return sync(); }
+          return loadProviders().then(function () { if (back) openPanel(); });
+        }, function () { /* hors ligne : le jeu continue en local */ });
         setInterval(tick, 5000);
         document.addEventListener('visibilitychange', function () { if (document.hidden) flush(); else if (user) sync(); });
         window.addEventListener('pagehide', flush);

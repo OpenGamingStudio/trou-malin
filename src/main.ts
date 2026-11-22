@@ -573,8 +573,8 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
 declare global { interface Window { OGSAccount?: { init(c: Record<string, unknown>): void; show(on: boolean): void } } }
 window.OGSAccount?.init({
   game: 'trou-malin', version: VERSION, color: '#5EC6F5', anchor: 'top-left', offset: [8, 8],
-  getState: () => toState(prog),
-  setState: (s: unknown) => {
+  getSave: () => toState(prog),
+  applySave: (s: unknown) => {
     prog = fromState(s); saveProgress(prog);
     if (view === 'home') renderHome(); else if (view === 'map') renderMap();
   },
