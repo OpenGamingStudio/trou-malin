@@ -4,6 +4,7 @@ import * as game from './game';
 import * as snd from './sound';
 import { fmt } from './format';
 import { VERSION } from './version';
+import { toState, fromState, isEmptyState, describeState } from './account';
 import { RULE } from './rules';
 import { STEPS, tutoAction } from './tuto';
 import { loadProgress, saveProgress, loadOpts, saveOpts, mergeLevel, unlocked, totalStars, levelsDone } from './save';
@@ -55,6 +56,7 @@ type View = keyof typeof VIEWS;
 let view: View = 'home';
 function show(v: View) {
   view = v;
+  window.OGSAccount?.show(v === 'home'); // le bouton compte n'est proposé que sur l'accueil
   (Object.keys(VIEWS) as View[]).forEach((k) => {
     const el = VIEWS[k], on = k === v;
     el.hidden = !on;
@@ -566,5 +568,18 @@ document.addEventListener('visibilitychange', () => snd.onVisibility(document.hi
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   window.addEventListener('load', () => { void navigator.serviceWorker.register('sw.js').catch(() => {}); });
 }
+
+/** Compte OpenGamingStudio (facultatif) : sauvegarde de la progression sur tous les appareils. */
+declare global { interface Window { OGSAccount?: { init(c: Record<string, unknown>): void; show(on: boolean): void } } }
+window.OGSAccount?.init({
+  game: 'trou-malin', version: VERSION, color: '#5EC6F5', anchor: 'top-left', offset: [8, 8],
+  getState: () => toState(prog),
+  setState: (s: unknown) => {
+    prog = fromState(s); saveProgress(prog);
+    if (view === 'home') renderHome(); else if (view === 'map') renderMap();
+  },
+  isEmpty: isEmptyState,
+  describe: describeState,
+});
 
 openHome();

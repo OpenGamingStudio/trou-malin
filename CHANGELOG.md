@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.0
+
+- Compte OpenGamingStudio facultatif : pseudo + code de récupération (sans e-mail), la progression se sauvegarde toute seule et se retrouve sur tous les appareils ; en cas de conflit, le joueur choisit la sauvegarde à garder. Le jeu reste jouable sans compte (bibliothèque `account.js`, dépôt account-api).
+
 ## 2.1.1
 
 - Forme « Carré » corrigée (5x5, elle dessinait une étoile) ; test d'unicité des formes ; le niveau 100 est le grand bloc (48 cases), chaque forme sert.
